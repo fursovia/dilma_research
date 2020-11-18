@@ -35,4 +35,18 @@ CUDA_VISIBLE_DEVICES="2" python train_bert.py \
   --per_device_train_batch_size 32 \
   --learning_rate 2e-5 \
   --num_train_epochs 3.0 \
-  --output_dir ./logs/$TASK_NAME/ 
+  --output_dir ./logs/$TASK_NAME/
+  
+  
+  
+DATA_DIR=$2
+LOG_DIR=${3:-"null"}
+
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+
+TRAIN_PATH=${DATA_DIR}/train.json
+VALID_PATH=${DATA_DIR}/valid.json
+TRAIN_DATA_PATH=${TRAIN_PATH} \
+    VALID_DATA_PATH=${VALID_PATH} \
+    allennlp train ${CONFIG_PATH} \
+    --serialization-dir ${LOG_DIR} 
