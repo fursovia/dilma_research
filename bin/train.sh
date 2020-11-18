@@ -17,4 +17,5 @@ LOG_DIR=./logs/${EXP_NAME}
 TRAIN_DATA_PATH=${TRAIN_PATH} \
     VALID_DATA_PATH=${VALID_PATH} \
     allennlp train ${CONFIG_PATH} \
-    --serialization-dir ${LOG_DIR}
+    --serialization-dir ${LOG_DIR} \
+    --include-package dilma
