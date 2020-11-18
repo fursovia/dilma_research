@@ -10,6 +10,10 @@
   },
   "train_data_path": std.extVar("CLS_TRAIN_DATA_PATH"),
   "validation_data_path": std.extVar("CLS_VALID_DATA_PATH"),
+  "vocabulary": {
+    "type": "extend",
+    "directory": "presets/vocab"
+  },
   "model": {
     "type": "basic_classifier_one_hot_support",
     "text_field_embedder": {
