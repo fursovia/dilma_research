@@ -12,7 +12,9 @@
   "validation_data_path": std.extVar("VALID_DATA_PATH"),
   "vocabulary": {
     "type": "extend",
-    "directory": "presets/vocab"
+    "directory": "presets/vocab",
+    "padding_token": "[PAD]",
+    "oov_token": "[UNK]"
   },
   "model": {
     "type": "basic_classifier_one_hot_support",
