@@ -8,8 +8,8 @@
     },
     "lazy": false
   },
-  "train_data_path": std.extVar("CLS_TRAIN_DATA_PATH"),
-  "validation_data_path": std.extVar("CLS_VALID_DATA_PATH"),
+  "train_data_path": std.extVar("TRAIN_DATA_PATH"),
+  "validation_data_path": std.extVar("VALID_DATA_PATH"),
   "vocabulary": {
     "type": "extend",
     "directory": "presets/vocab"
