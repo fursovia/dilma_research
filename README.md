@@ -50,3 +50,11 @@ TRAIN_DATA_PATH=${TRAIN_PATH} \
     VALID_DATA_PATH=${VALID_PATH} \
     allennlp train ${CONFIG_PATH} \
     --serialization-dir ${LOG_DIR} 
+    
+    
+pip install torch==1.7.0+cu101-f https://download.pytorch.org/whl/torch_stable.html
+
+
+215002-1811-sst2-clf_gru
+215129-1811-ag_news-clf_gru
+220128-1811-rotten_tomatoes-clf_gru
