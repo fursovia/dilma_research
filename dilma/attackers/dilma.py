@@ -18,10 +18,10 @@ class DILMA(Attacker):
         bert_name_or_path: str = "bert-base-uncased",
         alpha: float = 2.0,
         beta: float = 1.0,
-        lr: float = 0.001,
+        lr: float = 0.003,
         num_gumbel_samples: int = 3,
         tau: float = 1.0,
-        num_samples: int = 5,
+        num_samples: int = 10,
         temperature: float = 0.8,
         num_steps: int = 8,
         add_mask: bool = True,
@@ -109,4 +109,5 @@ class DILMA(Attacker):
             outputs.append(output)
 
         best_output = self.find_best_attack(outputs)
+        best_output.history = [deepcopy(out.to_dict()) for out in outputs]
         return best_output
