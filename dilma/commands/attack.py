@@ -26,6 +26,8 @@ def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(No
     out_dir = Path(out_dir)
     output_path = out_dir / Path(params["data_path"]).parent.name
     output_path.mkdir(exist_ok=True, parents=True)
+    params["out_dir"] = str(output_path)
+    params.to_file(str(output_path / "config.json"))
 
     typer.secho(f"Saving results to {output_path} ...", fg="green")
     with jsonlines.open(output_path / f"{date}_attacked_data.json", "w") as writer:
