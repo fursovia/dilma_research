@@ -51,7 +51,7 @@ def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(No
                 fg=typer.colors.YELLOW
             )
             wer = typer.style(f"wer: {adversarial_output.wer}", fg=typer.colors.BLUE)
-            message = f"[{i} / {len(data)}] {prob_mess}, y: {label_mess}, {wer}\n{initial_text}\n{adv_text}\n\n"
+            message = f"[{i} / {len(data)}] {prob_mess}, {label_mess}, {wer}\n{initial_text}\n{adv_text}\n\n"
             typer.echo(message)
 
             adversarial_output.data = adversarial_output.data.to_dict()
