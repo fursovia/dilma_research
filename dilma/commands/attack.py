@@ -22,7 +22,7 @@ def attack(config_path: str, samples: int = typer.Option(None, help="Number of s
     output_path = params["output_path"]
     typer.secho(f"Saving results to {output_path} ...", fg="green")
     with jsonlines.open(output_path, "w") as writer:
-        for i, sample in enumerate(tqdm(data)):
+        for i, sample in enumerate(data):
 
             try:
                 inputs = ClassificationData(**sample)
@@ -38,9 +38,9 @@ def attack(config_path: str, samples: int = typer.Option(None, help="Number of s
             else:
                 adv_text = typer.style(adv_text, fg=typer.colors.RED, bold=True)
 
-            initial_text = typer.style(initial_text, fg=typer.colors.GREEN, bold=True)
             prob_message = f"{adversarial_output.probability:.2f} -> {adversarial_output.adversarial_probability:.2f}"
-            message = f"[{i}] {prob_message}\n{initial_text}\n\n{adv_text}\n\n\n"
+            label_message = f"{adversarial_output.data.label:.2f} -> {adversarial_output.adversarial_data.label:.2f}"
+            message = f"[{i} / {len(data)}] {prob_message} ||| {label_message}\n{initial_text}\n\n{adv_text}\n\n\n"
             typer.echo(message)
 
             adversarial_output.data = adversarial_output.data.to_dict()
