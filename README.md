@@ -30,3 +30,11 @@
 bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/sst2
 bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/rotten_tomatoes
 bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/ag_news
+
+
+# Attack models
+
+CUDA_VISIBLE_DEVICES="3" \
+    CLF_PATH="./presets/models/ag_news.tar.gz" \
+    DATA_PATH="./data/ag_news/valid.json" \
+    python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet --samples 500

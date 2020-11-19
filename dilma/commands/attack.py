@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from allennlp.common.params import Params
 import typer
 import jsonlines
@@ -11,14 +13,17 @@ app = typer.Typer()
 
 
 @app.command()
-def attack(config_path: str, samples: int = typer.Option(None, help="Number of samples")):
+def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(None, help="Number of samples")):
+    out_dir = out_dir or "./results"
+    out_dir = Path(out_dir)
+    output_path = out_dir / "attacked_data.json"
+
     params = Params.from_file(config_path)
     # enable for testing params['attacker']['device'] = -1
     attacker = Attacker.from_params(params["attacker"])
 
     data = load_jsonlines(params["data_path"])[:samples]
 
-    output_path = params["output_path"]
     typer.secho(f"Saving results to {output_path} ...", fg="green")
     with jsonlines.open(output_path, "w") as writer:
         for i, sample in enumerate(data):
