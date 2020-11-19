@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
 
+MASK_TOKEN = "[MASK]"
+
+
 @dataclass_json
 @dataclass
 class ClassificationData:

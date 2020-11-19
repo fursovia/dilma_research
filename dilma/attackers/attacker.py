@@ -30,7 +30,7 @@ class AttackerOutput:
 
 class Attacker(ABC, Registrable):
 
-    SPECIAL_TOKENS = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]", ".", ";", ",", "-"]
+    SPECIAL_TOKENS = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]  # ".", ";", ",", "-"
 
     def __init__(self, archive_path: str, device: int = -1,) -> None:
         archive = load_archive(archive_path, cuda_device=device)
