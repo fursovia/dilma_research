@@ -7,7 +7,7 @@ from allennlp.common.file_utils import cached_path
 from allennlp.data.dataset_readers import DatasetReader, TextClassificationJsonReader
 from allennlp.data.fields import MetadataField, TextField, Field, ArrayField
 from allennlp.data.instance import Instance
-from allennlp.data.token_indexers import TokenIndexer
+from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 from allennlp.data.tokenizers import Tokenizer
 
 
@@ -44,12 +44,12 @@ class PairwiseReader(TextClassificationJsonReader):
 class DeepLevenshteinReader(DatasetReader):
     def __init__(
             self,
-            token_indexers: Dict[str, TokenIndexer],
             tokenizer: Tokenizer,
+            token_indexers: Dict[str, TokenIndexer] = None,
             lazy: bool = False
     ) -> None:
         super().__init__(lazy)
-        self._token_indexers = token_indexers
+        self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
         self._tokenizer = tokenizer
 
     def _read(self, file_path):
