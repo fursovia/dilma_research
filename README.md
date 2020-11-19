@@ -38,3 +38,14 @@ CUDA_VISIBLE_DEVICES="3" \
     CLF_PATH="./presets/models/sst2.tar.gz" \
     DATA_PATH="./data/sst2/valid.json" \
     python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet --samples 500
+    
+CUDA_VISIBLE_DEVICES="3" \
+    CLF_PATH="./presets/models/ag_news.tar.gz" \
+    DATA_PATH="./data/ag_news/valid.json" \
+    python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet --samples 500
+    
+    
+CUDA_VISIBLE_DEVICES="3" \
+    CLF_PATH="./presets/models/rotten_tomatoes.tar.gz" \
+    DATA_PATH="./data/rotten_tomatoes/valid.json" \
+    python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet --samples 500

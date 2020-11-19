@@ -24,11 +24,11 @@ def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(No
 
     out_dir = out_dir or "./results"
     out_dir = Path(out_dir)
-    output_path = out_dir / Path(params["data_path"]).parent.name / f"{date}_attacked_data.json"
+    output_path = out_dir / Path(params["data_path"]).parent.name
     output_path.mkdir(exist_ok=True, parents=True)
 
     typer.secho(f"Saving results to {output_path} ...", fg="green")
-    with jsonlines.open(output_path, "w") as writer:
+    with jsonlines.open(output_path / f"{date}_attacked_data.json", "w") as writer:
         for i, sample in enumerate(data):
 
             try:
