@@ -35,7 +35,7 @@ class Attacker(ABC, Registrable):
     def __init__(self, archive_path: str, device: int = -1,) -> None:
         archive = load_archive(archive_path, cuda_device=device)
         self.classifier = archive.model
-        self.classifier.eval()
+        # self.classifier.eval()
         self.reader = archive.dataset_reader
         self.vocab = self.classifier.vocab
 
