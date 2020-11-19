@@ -70,7 +70,7 @@ class Attacker(ABC, Registrable):
 
     def index_to_label(self, label_idx: int) -> str:
         label = self.vocab.get_index_to_token_vocabulary("labels").get(label_idx, str(label_idx))
-        return int(label)
+        return str(label)
 
     def label_to_index(self, label: str) -> int:
         label_idx = self.vocab.get_token_to_index_vocabulary("labels").get(str(label), label)
