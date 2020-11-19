@@ -57,6 +57,8 @@ class DILMA(Attacker):
 
         bert = deepcopy(self.bert_model)
         inputs = self.bert_tokenizer(text=text, return_tensors='pt', padding=True, truncation=True)
+        if self.device >= 0:
+            inputs = {key: val.to(self.device) for key, val in inputs.items()}
 
         outputs = []
         for step in range(self.num_steps):
