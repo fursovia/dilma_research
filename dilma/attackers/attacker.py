@@ -40,7 +40,7 @@ class Attacker(ABC, Registrable):
         self.vocab = self.classifier.vocab
 
         self.device = device
-        self.special_indexes = [self.vocab.get_token_index(token, "transactions") for token in self.SPECIAL_TOKENS]
+        self.special_indexes = [self.vocab.get_token_index(token, "tokens") for token in self.SPECIAL_TOKENS]
 
     @abstractmethod
     def attack(self, data_to_attack: Union[ClassificationData, PairClassificationData]) -> AttackerOutput:
