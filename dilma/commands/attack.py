@@ -40,7 +40,7 @@ def attack(config_path: str, samples: int = typer.Option(None, help="Number of s
 
             prob_message = f"{adversarial_output.probability:.2f} -> {adversarial_output.adversarial_probability:.2f}"
             label_message = f"{adversarial_output.data.label} -> {adversarial_output.adversarial_data.label}"
-            message = f"[{i} / {len(data)}] {prob_message} ||| {label_message}\n{initial_text}\n\n{adv_text}\n\n\n"
+            message = f"[{i} / {len(data)}] {prob_message} ||| {label_message}\n{initial_text}\n{adv_text}\n\n"
             typer.echo(message)
 
             adversarial_output.data = adversarial_output.data.to_dict()
