@@ -42,10 +42,16 @@ def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(No
             else:
                 adv_text = typer.style(adv_text, fg=typer.colors.RED, bold=True)
 
-            prob_mess = f"{adversarial_output.probability:.2f} -> {adversarial_output.adversarial_probability:.2f}"
-            label_mess = f"{adversarial_output.data.label} -> {adversarial_output.adversarial_data.label}"
-            wer = f"wer: {adversarial_output.wer}"
-            message = f"[{i} / {len(data)}] p(x): {prob_mess}, y: {label_mess} {wer}\n{initial_text}\n{adv_text}\n\n"
+            prob_mess = typer.style(
+                f"p(x): {adversarial_output.probability:.2f} -> {adversarial_output.adversarial_probability:.2f}",
+                fg=typer.colors.CYAN
+            )
+            label_mess = typer.style(
+                f"y: {adversarial_output.data.label} -> {adversarial_output.adversarial_data.label}",
+                fg=typer.colors.YELLOW
+            )
+            wer = typer.style(f"wer: {adversarial_output.wer}", fg=typer.colors.BLUE)
+            message = f"[{i} / {len(data)}] {prob_mess}, y: {label_mess}, {wer}\n{initial_text}\n{adv_text}\n\n"
             typer.echo(message)
 
             adversarial_output.data = adversarial_output.data.to_dict()
