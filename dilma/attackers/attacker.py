@@ -63,16 +63,16 @@ class Attacker(ABC, Registrable):
         probs = self.classifier(inputs)['probs']
         return probs
 
-    def probs_to_label(self, probs: torch.Tensor) -> int:
+    def probs_to_label(self, probs: torch.Tensor) -> str:
         label_idx = probs.argmax().item()
         label = self.index_to_label(label_idx)
         return label
 
-    def index_to_label(self, label_idx: int) -> int:
+    def index_to_label(self, label_idx: int) -> str:
         label = self.vocab.get_index_to_token_vocabulary("labels").get(label_idx, str(label_idx))
         return int(label)
 
-    def label_to_index(self, label: int) -> int:
+    def label_to_index(self, label: str) -> int:
         label_idx = self.vocab.get_token_to_index_vocabulary("labels").get(str(label), label)
         return label_idx
 
