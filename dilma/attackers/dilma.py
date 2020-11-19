@@ -18,7 +18,7 @@ class DILMA(Attacker):
         bert_name_or_path: str = "bert-base-uncased",
         alpha: float = 2.0,
         beta: float = 1.0,
-        lr: float = 0.003,
+        lr: float = 0.001,
         num_gumbel_samples: int = 3,
         tau: float = 1.0,
         num_samples: int = 10,
