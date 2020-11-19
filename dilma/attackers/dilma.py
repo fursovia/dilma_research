@@ -4,9 +4,10 @@ from copy import deepcopy
 from transformers import AutoTokenizer, BertLMHeadModel
 import torch
 
-from dilma.constants import ClassificationData, PairClassificationData
+from dilma.constants import ClassificationData, PairClassificationData, MASK_TOKEN
 from dilma.attackers.attacker import Attacker, AttackerOutput
 from dilma.utils.metrics import calculate_wer
+from dilma.utils.data import clean_text
 
 
 @Attacker.register("dilma")
@@ -23,6 +24,7 @@ class DILMA(Attacker):
         num_samples: int = 5,
         temperature: float = 0.8,
         num_steps: int = 8,
+        add_mask: bool = True,
         device: int = -1,
     ) -> None:
         super().__init__(archive_path, device)
@@ -31,8 +33,6 @@ class DILMA(Attacker):
 
         if self.device >= 0 and torch.cuda.is_available():
             self.bert_model = self.bert_model.to(self.device)
-
-        self.initial_parameters = list(self.bert_model.bert.parameters())
 
         self.bert_tokenizer = AutoTokenizer.from_pretrained(bert_name_or_path)
 
@@ -44,6 +44,7 @@ class DILMA(Attacker):
         self.num_samples = num_samples
         self.temperature = temperature
         self.num_steps = num_steps
+        self.add_mask = add_mask
 
     def tokenize_text(self, text: str):
         return
@@ -56,7 +57,12 @@ class DILMA(Attacker):
         initial_prob = None
 
         bert = deepcopy(self.bert_model)
-        inputs = self.bert_tokenizer(text=text, return_tensors='pt', padding=True, truncation=True)
+        if self.add_mask:
+            input_text = text + " " + MASK_TOKEN
+        else:
+            input_text = text
+
+        inputs = self.bert_tokenizer(text=input_text, return_tensors='pt', padding=True, truncation=True)
         if self.device >= 0:
             inputs = {key: val.to(self.device) for key, val in inputs.items()}
 
@@ -90,6 +96,7 @@ class DILMA(Attacker):
                 adv_label = self.probs_to_label(clf_probs)
                 adv_prob = clf_probs[0, label_to_attack_idx]
                 adv_text = self.bert_tokenizer.decode(indexes.cpu().numpy()[0].tolist())
+                adv_text = clean_text(adv_text)
 
             output = AttackerOutput(
                 data=ClassificationData(text=text, label=label_to_attack),

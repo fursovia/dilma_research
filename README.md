@@ -24,37 +24,9 @@
 * roberta-base
 
 
-export TASK_NAME="sst2"
-
-CUDA_VISIBLE_DEVICES="2" python train_bert.py \
-  --model_name_or_path bert-base-uncased \
-  --task_name $TASK_NAME \
-  --do_train \
-  --do_eval \
-  --max_seq_length 128 \
-  --per_device_train_batch_size 32 \
-  --learning_rate 2e-5 \
-  --num_train_epochs 3.0 \
-  --output_dir ./logs/$TASK_NAME/
-  
-  
-  
-DATA_DIR=$2
-LOG_DIR=${3:-"null"}
-
-export TF_FORCE_GPU_ALLOW_GROWTH=true
-
-TRAIN_PATH=${DATA_DIR}/train.json
-VALID_PATH=${DATA_DIR}/valid.json
-TRAIN_DATA_PATH=${TRAIN_PATH} \
-    VALID_DATA_PATH=${VALID_PATH} \
-    allennlp train ${CONFIG_PATH} \
-    --serialization-dir ${LOG_DIR} 
-    
-    
-pip install torch==1.7.0+cu101-f https://download.pytorch.org/whl/torch_stable.html
+# Train Models
 
 
-215002-1811-sst2-clf_gru
-215129-1811-ag_news-clf_gru
-220128-1811-rotten_tomatoes-clf_gru
+bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/sst2
+bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/rotten_tomatoes
+bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/ag_news
