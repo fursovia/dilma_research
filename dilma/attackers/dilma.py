@@ -86,7 +86,7 @@ class DILMA(Attacker):
                 clf_probs = self.get_probs_from_indexes(indexes)
                 adv_label = self.probs_to_label(clf_probs)
                 adv_prob = clf_probs[0, label_to_attack_idx]
-                adv_text = self.bert_tokenizer.decode(indexes.numpy()[0].tolist())
+                adv_text = self.bert_tokenizer.decode(indexes.cpu().numpy()[0].tolist())
 
             output = AttackerOutput(
                 data=ClassificationData(text=text, label=label_to_attack),
