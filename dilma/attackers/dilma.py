@@ -99,8 +99,8 @@ class DILMA(Attacker):
                 adv_text = clean_text(adv_text)
 
             output = AttackerOutput(
-                data=ClassificationData(text=text, label=label_to_attack),
-                adversarial_data=ClassificationData(text=adv_text, label=adv_label),
+                data=ClassificationData(text=text, label=str(label_to_attack)),
+                adversarial_data=ClassificationData(text=adv_text, label=str(adv_label)),
                 probability=initial_prob.item(),
                 adversarial_probability=adv_prob.item(),
                 prob_diff=(initial_prob - adv_prob).item(),

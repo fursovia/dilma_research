@@ -37,7 +37,7 @@ def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(No
             initial_text = adversarial_output.data.text
             adv_text = adversarial_output.adversarial_data.text
 
-            if adversarial_output.data.label != adversarial_output.adversarial_data.label:
+            if str(adversarial_output.data.label) != str(adversarial_output.adversarial_data.label):
                 adv_text = typer.style(adv_text, fg=typer.colors.GREEN, bold=True)
             else:
                 adv_text = typer.style(adv_text, fg=typer.colors.RED, bold=True)
