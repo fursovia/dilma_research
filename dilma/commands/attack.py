@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime
 
 from allennlp.common.params import Params
 import typer
@@ -14,15 +15,17 @@ app = typer.Typer()
 
 @app.command()
 def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(None, help="Number of samples")):
-    out_dir = out_dir or "./results"
-    out_dir = Path(out_dir)
-    output_path = out_dir / "attacked_data.json"
+    date = datetime.utcnow().strftime('%H%M%S-%d%m')
 
     params = Params.from_file(config_path)
     # enable for testing params['attacker']['device'] = -1
     attacker = Attacker.from_params(params["attacker"])
-
     data = load_jsonlines(params["data_path"])[:samples]
+
+    out_dir = out_dir or "./results"
+    out_dir = Path(out_dir)
+    output_path = out_dir / Path(params["data_path"]).parent.name / f"{date}_attacked_data.json"
+    output_path.mkdir(exist_ok=True, parents=True)
 
     typer.secho(f"Saving results to {output_path} ...", fg="green")
     with jsonlines.open(output_path, "w") as writer:
