@@ -35,7 +35,6 @@
         "dropout": 0.1,
         "bidirectional": true
     },
-    "dropout": 0.1,
   },
   "data_loader": {
     "shuffle": true,
