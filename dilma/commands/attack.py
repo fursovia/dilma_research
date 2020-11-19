@@ -30,6 +30,19 @@ def attack(config_path: str, samples: int = typer.Option(None, help="Number of s
                 inputs = PairClassificationData(**sample)
 
             adversarial_output = attacker.attack(inputs)
+            initial_text = adversarial_output.data.text
+            adv_text = adversarial_output.adversarial_data.text
+
+            if adversarial_output.data.label != adversarial_output.adversarial_data.label:
+                adv_text = typer.style(adv_text, fg=typer.colors.GREEN, bold=True)
+            else:
+                adv_text = typer.style(adv_text, fg=typer.colors.RED, bold=True)
+
+            initial_text = typer.style(initial_text, fg=typer.colors.GREEN, bold=True)
+            prob_message = f"{adversarial_output.probability:.2f} -> {adversarial_output.adversarial_probability:.2f}"
+            message = f"[{i}] {prob_message}\n{initial_text}\n\n{adv_text}\n\n\n"
+            typer.echo(message)
+
             adversarial_output.data = adversarial_output.data.to_dict()
             adversarial_output.adversarial_data = adversarial_output.adversarial_data.to_dict()
             writer.write(adversarial_output.to_dict())

@@ -28,6 +28,10 @@ class DILMA(Attacker):
         super().__init__(archive_path, device)
         self.bert_model = BertLMHeadModel.from_pretrained(bert_name_or_path)
         self.bert_model.eval()
+
+        if self.device >= 0 and torch.cuda.is_available():
+            self.bert_model = self.bert_model.to(self.device)
+
         self.initial_parameters = list(self.bert_model.bert.parameters())
 
         self.bert_tokenizer = AutoTokenizer.from_pretrained(bert_name_or_path)
