@@ -1,7 +1,6 @@
 from allennlp.common.params import Params
 import typer
 import jsonlines
-from tqdm import tqdm
 
 from dilma.attackers import Attacker
 from dilma.constants import ClassificationData, PairClassificationData

@@ -82,7 +82,10 @@ class DILMA(Attacker):
 
             with torch.no_grad():
                 bert_out = bert(**inputs, return_dict=True)
-                indexes = bert_out.logits.argmax(dim=2)[:, 1:-1]
+                lm_probs = torch.softmax(bert_out.logits, dim=-1)
+                lm_probs[:, :, self.special_indexes] = 0.0
+
+                indexes = lm_probs.argmax(dim=2)[:, 1:-1]
                 clf_probs = self.get_probs_from_indexes(indexes)
                 adv_label = self.probs_to_label(clf_probs)
                 adv_prob = clf_probs[0, label_to_attack_idx]
