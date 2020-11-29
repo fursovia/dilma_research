@@ -11,6 +11,7 @@ from allennlp.data import TextFieldTensors
 import torch
 
 from dilma.constants import ClassificationData, PairClassificationData
+from dilma.utils.metrics import calculate_wer
 
 
 ModelsInput = Dict[str, Union[TextFieldTensors, torch.Tensor]]
@@ -23,14 +24,21 @@ class AttackerOutput:
     adversarial_data: Union[ClassificationData, PairClassificationData]
     probability: float  # original probability
     adversarial_probability: float
-    prob_diff: float
-    wer: int
+    prob_diff: Optional[float] = None
+    wer: Optional[int] = None
     history: Optional[List[Dict[str, Any]]] = None
+
+    def __post_init__(self):
+        if self.prob_diff is None:
+            self.prob_diff = self.probability - self.adversarial_probability
+
+        if self.wer is None:
+            self.wer = calculate_wer(self.data.text, self.adversarial_data.text)
 
 
 class Attacker(ABC, Registrable):
 
-    SPECIAL_TOKENS = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]  # ".", ";", ",", "-"
+    SPECIAL_TOKENS = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
 
     def __init__(self, archive_path: str, device: int = -1,) -> None:
         archive = load_archive(archive_path, cuda_device=device)
@@ -45,6 +53,15 @@ class Attacker(ABC, Registrable):
     @abstractmethod
     def attack(self, data_to_attack: Union[ClassificationData, PairClassificationData]) -> AttackerOutput:
         pass
+
+    def move_to_device(self, inputs: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        if self.device >= 0:
+            inputs = {key: val.to(self.device) for key, val in inputs.items()}
+        return inputs
+
+    @staticmethod
+    def truncate_start_end_tokens(data: torch.Tensor) -> torch.Tensor:
+        return data[:, 1:-1]
 
     def get_probs_from_indexes(self, indexes: torch.Tensor) -> torch.Tensor:
         onehot = torch.nn.functional.one_hot(indexes.long(), num_classes=self.vocab.get_vocab_size())
@@ -63,6 +80,18 @@ class Attacker(ABC, Registrable):
         probs = self.classifier(inputs)['probs']
         return probs
 
+    def get_probs_from_string(self, text: str) -> torch.Tensor:
+        inputs = self.text_to_textfield_tensors(text)
+        return self.get_probs_from_textfield_tensors(inputs)
+
+    def text_to_textfield_tensors(self, text: str) -> Dict[str, torch.Tensor]:
+        instances = Batch([
+            self.reader.text_to_instance(text)
+        ])
+        instances.index_instances(self.vocab)
+        inputs = instances.as_tensor_dict()
+        return move_to_device(inputs, cuda_device=self.device)
+
     def probs_to_label(self, probs: torch.Tensor) -> str:
         label_idx = probs.argmax().item()
         label = self.index_to_label(label_idx)
@@ -75,15 +104,6 @@ class Attacker(ABC, Registrable):
     def label_to_index(self, label: str) -> int:
         label_idx = self.vocab.get_token_to_index_vocabulary("labels").get(str(label), label)
         return label_idx
-
-    def text_to_tensor(self, text: str) -> torch.Tensor:
-        instances = Batch([
-            self.reader.text_to_instance(text)
-        ])
-
-        instances.index_instances(self.vocab)
-        inputs = instances.as_tensor_dict()["tokens"]
-        return move_to_device(inputs, cuda_device=self.device)
 
     @staticmethod
     def find_best_attack(outputs: List[AttackerOutput]) -> AttackerOutput:
