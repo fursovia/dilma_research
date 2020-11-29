@@ -114,6 +114,8 @@ class DILMA(Attacker):
             deeplev_input = self.text_to_textfield_tensors(text)
             with torch.no_grad():
                 deeplev_emb = self.deeplev.encode_sequence(sequence=deeplev_input["sequence"])
+        else:
+            deeplev_emb = None
 
         # we do this so for each .attack() we have an initial bert (with initial weights)
         bert = deepcopy(self.bert_model)
@@ -135,7 +137,7 @@ class DILMA(Attacker):
             onehot_with_grads = gumbel_softmax(bert_out.logits, tau=self.tau, hard=True)
             onehot_with_grads = self.truncate_start_end_tokens(onehot_with_grads)
 
-            if self.deeplev is not None:
+            if deeplev_emb is not None:
                 adv_deeplev_emb = self.deeplev.encode_sequence(onehot_with_grads)
                 distance = self.deeplev.forward_on_embeddings(deeplev_emb, adv_deeplev_emb)
             else:
