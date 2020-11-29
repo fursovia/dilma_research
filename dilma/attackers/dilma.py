@@ -1,4 +1,4 @@
-from typing import Union, Optional, List, Dict
+from typing import Union, Optional, Dict
 from copy import deepcopy
 
 from transformers import AutoTokenizer, BertLMHeadModel
