@@ -77,7 +77,7 @@ class Attacker(ABC, Registrable):
         return probs
 
     def get_probs_from_textfield_tensors(self, inputs: ModelsInput) -> torch.Tensor:
-        probs = self.classifier(inputs)['probs']
+        probs = self.classifier(inputs['tokens'])['probs']
         return probs
 
     def get_probs_from_string(self, text: str) -> torch.Tensor:

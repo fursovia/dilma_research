@@ -113,7 +113,7 @@ class DILMA(Attacker):
         if self.deeplev is not None:
             deeplev_input = self.text_to_textfield_tensors(text)
             with torch.no_grad():
-                deeplev_emb = self.deeplev.encode_sequence(sequence=deeplev_input["sequence"])
+                deeplev_emb = self.deeplev.encode_sequence(sequence=deeplev_input["tokens"])
         else:
             deeplev_emb = None
 
@@ -150,7 +150,7 @@ class DILMA(Attacker):
 
             adv_text = self.sample_from_language_model(bert, inputs)
 
-            with torch.no_grad:
+            with torch.no_grad():
                 clf_probs = self.get_probs_from_string(adv_text)
                 adv_label = self.probs_to_label(clf_probs)
                 adv_prob = clf_probs[0, label_to_attack_idx]

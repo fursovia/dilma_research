@@ -14,21 +14,27 @@ app = typer.Typer()
 
 
 @app.command()
-def attack(config_path: str, out_dir: str = None, samples: int = typer.Option(None, help="Number of samples")):
+def attack(
+        config_path: str,
+        data_path: str,
+        out_dir: str = None,
+        samples: int = typer.Option(None, help="Number of samples")
+):
     date = datetime.utcnow().strftime('%H%M%S-%d%m')
 
     params = Params.from_file(config_path)
-    # enable for testing params['attacker']['device'] = -1
+    # enable for testing params["attacker"]['device'] = -1
     attacker = Attacker.from_params(params["attacker"])
-    data = load_jsonlines(params["data_path"])[:samples]
+    data = load_jsonlines(data_path)[:samples]
 
     out_dir = out_dir or "./results"
     out_dir = Path(out_dir)
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    dataset_name = Path(params["data_path"]).parent.name
+    dataset_name = Path(data_path).parent.name
     attack_name = Path(config_path).stem
 
+    params["data_path"] = str(data_path)
     params["out_dir"] = str(out_dir)
     prefix = f"{date}__{dataset_name}__{attack_name}"
     config_path = out_dir / (prefix + "__config.json")
