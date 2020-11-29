@@ -55,7 +55,7 @@ class DILMA(Attacker):
         self.bert_tokenizer = AutoTokenizer.from_pretrained(bert_name_or_path)
         if deeplev_archive_path is not None:
             archive = load_archive(deeplev_archive_path, cuda_device=device)
-            self.deeplev = archive.model.eval()
+            self.deeplev = archive.model
         else:
             self.deeplev = None
 
