@@ -53,8 +53,11 @@ class DILMA(Attacker):
             self.bert_model = self.bert_model.to(self.device)
 
         self.bert_tokenizer = AutoTokenizer.from_pretrained(bert_name_or_path)
-        archive = load_archive(deeplev_archive_path, cuda_device=device)
-        self.deeplev = archive.model.eval()
+        if deeplev_archive_path is not None:
+            archive = load_archive(deeplev_archive_path, cuda_device=device)
+            self.deeplev = archive.model.eval()
+        else:
+            self.deeplev = None
 
         self.beta = beta
         self.lr = lr
@@ -107,6 +110,11 @@ class DILMA(Attacker):
         label_to_attack_idx = self.label_to_index(label_to_attack)
         initial_prob = None
 
+        if self.deeplev is not None:
+            deeplev_input = self.text_to_textfield_tensors(text)
+            with torch.no_grad():
+                deeplev_emb = self.deeplev.encode_sequence(sequence=deeplev_input["sequence"])
+
         # we do this so for each .attack() we have an initial bert (with initial weights)
         bert = deepcopy(self.bert_model)
 
@@ -127,8 +135,14 @@ class DILMA(Attacker):
             onehot_with_grads = gumbel_softmax(bert_out.logits, tau=self.tau, hard=True)
             onehot_with_grads = self.truncate_start_end_tokens(onehot_with_grads)
 
+            if self.deeplev is not None:
+                adv_deeplev_emb = self.deeplev.encode_sequence(onehot_with_grads)
+                distance = self.deeplev.forward_on_embeddings(deeplev_emb, adv_deeplev_emb)
+            else:
+                distance = None
+
             clf_prob = self.get_probs_from_onehot(onehot_with_grads)[0, label_to_attack_idx]
-            loss = self.calculate_loss(clf_prob, distance=None)
+            loss = self.calculate_loss(clf_prob, distance=distance)
             loss.backward()
             self.update_weights(bert)
 
