@@ -5,8 +5,7 @@ from torch.utils.data import Dataset
 from transformers import EvalPrediction
 import random
 import re
-from typing import Sequence, Dict, Any, List
-
+from typing import Sequence, Dict, Any, List, Tuple
 
 def random_seed(seed):
     torch.manual_seed(seed)
@@ -14,13 +13,13 @@ def random_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
 
-def get_data(path):
+def get_data(path: str) -> List[Tuple[str, int]]:
     text_file = open(path, "r")
     raw_lines = text_file.readlines()
     dataset = [(' '.join(i.split()[1:]), int(i.split()[0])) for i in raw_lines]
     return dataset
 
-def get_adv_data(path):
+def get_adv_data(path: str) -> List[Tuple[str, int]]:
     df = pd.read_csv(path)
     df = df[df['result_type'] == 'Successful']
     labels = [int(i) for i in df['ground_truth_output'].tolist()]
@@ -40,7 +39,7 @@ class CustomDataset(Dataset):
         item['labels'] = torch.tensor(self.labels[idx])
         return item
         
-def compute_metrics(p: EvalPrediction):
+def compute_metrics(p: EvalPrediction) -> Dict[str, Any]:
     is_regression = False
     preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
     preds = np.squeeze(preds) if is_regression else np.argmax(preds, axis=1)

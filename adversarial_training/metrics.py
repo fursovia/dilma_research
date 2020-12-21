@@ -219,13 +219,15 @@ def nlp_metrics(
 
 
 def calculate_wer(text_a: str, text_b: str) -> int:
-    # taken from https://github.com/SeanNaren/deepspeech.pytorch/blob/master/decoder.py
+    # taken from
+    # https://github.com/SeanNaren/deepspeech.pytorch/blob/master/decoder.py
     b = set(text_a.split() + text_b.split())
     word2char = dict(zip(b, range(len(b))))
 
     w1 = [chr(word2char[w]) for w in text_a.split()]
     w2 = [chr(word2char[w]) for w in text_b.split()]
     return Levenshtein.distance(''.join(w1), ''.join(w2))
+
 
 def normalized_accuracy_drop(
         wers: List[int],
@@ -242,5 +244,3 @@ def normalized_accuracy_drop(
             nads.append(0.0)
 
     return sum(nads) / len(nads)
-
-
