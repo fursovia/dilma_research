@@ -48,9 +48,20 @@ Resulting folder:
 
 
 # Script for Adversarial training
-Script iterates through datasets, train model on Train part of dataset, attacks it. 
-Then use perturbed data for adversarial training of model and measure attack again.
+Script iterates through datasets, for each one:
+1. Model is trained on Train part of dataset
+2. Model is attacked 
+3. Model is finetuned on successfull examples from the attack
+4. Attack is repeated
 
 ```bash
 bash bin/run_adv_training.sh
+```
+
+1. Script run adversarial attack, use n perturbed examples
+2. Model is finetuned on successfull examples
+3. Attack is repeated
+
+```bash
+bash bin/adv_training_number_experiment.sh
 ```
