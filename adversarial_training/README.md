@@ -65,3 +65,12 @@ bash bin/run_adv_training.sh
 ```bash
 bash bin/adv_training_number_experiment.sh
 ```
+
+Iteration over all attacks
+1. Script run adversarial attack_1, use n perturbed examples
+2. Model is finetuned on successfull examples
+3. We use attack_2 on model, obtained from adversarial training on perturbed data from attack_1
+
+```bash
+bash bin/attack_transfer.sh
+```
