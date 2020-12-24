@@ -72,5 +72,5 @@ Iteration over all attacks
 3. We use attack_2 on model, obtained from adversarial training on perturbed data from attack_1
 
 ```bash
-bash bin/attack_transfer.sh
+bash bin/attack_transfer.sh dataset_name
 ```
