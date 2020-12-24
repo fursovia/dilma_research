@@ -55,7 +55,7 @@ Script iterates through datasets, for each one:
 4. Attack is repeated
 
 ```bash
-bash bin/run_adv_training.sh
+bash bin/run_adv_training.sh dataset_name logging_file_name
 ```
 
 1. Script run adversarial attack, use n perturbed examples
