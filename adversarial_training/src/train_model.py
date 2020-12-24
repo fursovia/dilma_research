@@ -16,6 +16,7 @@ from transformers import (AutoTokenizer,
                           TrainingArguments,
                           get_linear_schedule_with_warmup
                          )
+from transformers import default_data_collator
 
 @dataclass
 class DataTrainingArguments:
@@ -155,7 +156,8 @@ def main():
         eval_dataset=test_dataset,
         compute_metrics=compute_metrics,
         tokenizer=tokenizer,
-        optimizers = (optimizer, scheduler)
+        optimizers = (optimizer, scheduler),
+        data_collator = default_data_collator
     )
     
     if training_args.do_train:
