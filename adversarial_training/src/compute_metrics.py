@@ -6,23 +6,20 @@ import re
 import numpy as np
 from sklearn.metrics import accuracy_score
 from nltk.tokenize.treebank import TreebankWordTokenizer
-from src.metrics import (stanza_metrics,
-                         dist_k, ent_k,
-                         bert_score_count,
-                         calculate_wer,
-                         normalized_accuracy_drop)
+from metrics import (stanza_metrics, 
+                     dist_k, ent_k, 
+                     bert_score_count,
+                     calculate_wer,
+                     normalized_accuracy_drop
+                    )
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--folder_path',
-        type=str,
-        default='datasets/tomato/attacks')
+    parser.add_argument('--folder_path', type=str, default='datasets/tomato/attacks')
     parser.add_argument('--save_path', type=str, default='datasets/tomato')
     args = parser.parse_args()
     return args
-
 
 def metrics_file(file_path, before_or_after = None):
     '''
@@ -73,7 +70,7 @@ def metrics_file(file_path, before_or_after = None):
 def prepare_output(dict_of_metrics):
     res = dict()
     for i, j in dict_of_metrics.items():
-        if not isinstance(j, dict):
+        if type(j) != dict:
             res[i] = j
         elif i == 'bertscore':
             res['bertscore'] = np.round(j['F1'], 3)
@@ -82,11 +79,10 @@ def prepare_output(dict_of_metrics):
                 res[f"acc_{name}"] = np.round(metric, 3)
         elif i in ['k_dist', 'k_ent']:
             for name, metric in j.items():
-                res[f"{i}_{name}"] = ' '.join(
-                    [f"{ngram}: {np.round(count, 3)}" for ngram, count in metric.items()])
+                res[f"{i}_{name}"] = ' '.join([f"{ngram}: {np.round(count, 3)}" for ngram, count in metric.items()])
     return res
-
-
+             
+    
 def metrics_folder(folder_path, save_path = 'metrics.csv'):
     result = list()
     paths = Path(folder_path).glob('*.csv')
@@ -96,8 +92,9 @@ def metrics_folder(folder_path, save_path = 'metrics.csv'):
     df = pd.DataFrame(result)
     df.reset_index()
     df.to_csv(save_path, index=False)
-
-
+    
 if __name__ == '__main__':
     args = parse_arguments()
     metrics_folder(args.folder_path, args.save_path)
+
+
