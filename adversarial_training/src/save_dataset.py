@@ -78,7 +78,11 @@ def save_dataset(dataset: Dict[str, List[Dict[str, Any]]],
 
 def get_dataset(args) -> Dict[str, List[Dict[str, Any]]]:
     if args.from_huggingface:
-        return load_dataset(args.huggingface_name)
+        if args.huggingface_subset_name is None:
+            return load_dataset(args.huggingface_name)
+        else:
+            return load_dataset(args.huggingface_name,
+                                args.huggingface_subset_name)
     else:
         return json.load(Path(args.file_path).open('r'))
 
@@ -91,6 +95,7 @@ def parse_arguments():
         action='store_true',
         default=None)
     parser.add_argument('--huggingface_name', type=str, default=None)
+    parser.add_argument('--huggingface_subset_name', type=str, default=None)
     parser.add_argument('--file_path', type=str, default=None)
     parser.add_argument('--path_to_save', type=str)
     parser.add_argument('--name_of_text_field', type=str, default='text')

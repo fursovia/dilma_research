@@ -17,6 +17,7 @@ from transformers import (AutoTokenizer,
                           get_linear_schedule_with_warmup
                          )
 from transformers import default_data_collator
+from custom_trainer import CustomTrainer
 
 @dataclass
 class DataTrainingArguments:
@@ -89,6 +90,14 @@ class OtherArguments:
         metadata={"help": "use validation or test split for testing model"}, 
         default=None,
     )
+    use_custom_trainer: bool = field(
+        metadata={"help": "use custom Trainer or not"}, 
+        default=False,
+    )
+    stat_file_for_saving: str = field(
+        metadata={"help": "name for statistic of training saving"}, 
+        default=None,
+    )
     
 
 def main():
@@ -148,8 +157,9 @@ def main():
                                                     num_training_steps=training_args.max_steps)
     else:
         scheduler = None
-        
-    trainer = Trainer(
+    
+    trainer_class = CustomTrainer if other_args.use_custom_trainer else Trainer
+    trainer = trainer_class(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
@@ -157,12 +167,13 @@ def main():
         compute_metrics=compute_metrics,
         tokenizer=tokenizer,
         optimizers = (optimizer, scheduler),
-        data_collator = default_data_collator
+        data_collator = default_data_collator,
     )
     
     if training_args.do_train:
         trainer.train(
-            model_path=model_args.model_name_or_path if os.path.isdir(model_args.model_name_or_path) else None
+            model_path=model_args.model_name_or_path if os.path.isdir(model_args.model_name_or_path) else None,
+            stat_file_for_saving = other_args.stat_file_for_saving
         )
     
         trainer.save_model()

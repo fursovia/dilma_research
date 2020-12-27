@@ -63,7 +63,7 @@ bash bin/run_adv_training.sh dataset_name logging_file_name
 3. Attack is repeated
 
 ```bash
-bash bin/adv_training_number_experiment.sh
+bash bin/adv_training_number_experiment.sh number_of_examples_to_attack logging_file_name
 ```
 
 Iteration over all attacks
@@ -72,5 +72,5 @@ Iteration over all attacks
 3. We use attack_2 on model, obtained from adversarial training on perturbed data from attack_1
 
 ```bash
-bash bin/attack_transfer.sh dataset_name
+bash bin/attack_transfer.sh dataset_name logging_file_name
 ```

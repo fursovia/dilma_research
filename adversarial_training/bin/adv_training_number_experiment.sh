@@ -16,7 +16,11 @@ else
 validation_split_name='validation'
 fi
 
+if [ $dataset == "sst2" ]; then
+test_split_name='validation'
+else
 test_split_name='test'
+fi
 
 for attacker in "deepwordbug" "textbugger" "pwws"; do
     echo "Attack ${attacker} start, ${num_examples_maximum} examples" >> ${logger_name}.txt
@@ -50,10 +54,14 @@ for attacker in "deepwordbug" "textbugger" "pwws"; do
             --save_steps -1 \
             --evaluation_strategy "epoch" \
             --evaluate_during_training \
+            --output_dir datasets/${dataset}/adv_trained_model/ \
             --adversarial_data_path datasets/${dataset}/attacks/${attacker}_${validation_split_name}_max_number.csv \
             --adversarial_training_original_data_amount ${num_examples} \
-            --adversarial_training_perturbed_data_amount ${num_examples} \
-            --output_dir datasets/${dataset}/adv_trained_model/
+            --adversarial_training_perturbed_data_amount ${num_examplыes} \
+            --use_custom_trainer \
+            --stat_file_for_saving stat_${attacker}_${num_examples}.json
+
+
 
         echo "Train ${attacker} end num_examples ${num_examples}" >> ${logger_name}.txt
         echo "Attack ${attacker} start num_examples ${num_examples}" >> ${logger_name}.txt
