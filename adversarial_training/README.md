@@ -48,7 +48,7 @@ Resulting folder:
 
 
 # Script for Adversarial training
-Script iterates through datasets, for each one:
+
 1. Model is trained on Train part of dataset
 2. Model is attacked 
 3. Model is finetuned on successfull examples from the attack
