@@ -8,7 +8,7 @@ Script for preparing folder structure for adv.training experiments. Files can be
 
 ```console
 !python src/save_dataset.py \
---dataset_name tomato \
+--task_name tomato \
 --huggingface_name rotten_tomatoes \
 --from_huggingface \
 --path_to_save datasets 
@@ -26,7 +26,7 @@ Resulting folder:
         │   ├──load_tomato_model.py
         │   └──model files
         │
-        ├── data
+        ├── data(if dataset not in huggingface)
         │   ├──load_tomato_{split_name}.py
         │   └──{split_name}.txt
         │
@@ -74,3 +74,10 @@ Iteration over all attacks
 ```bash
 bash bin/attack_transfer.sh dataset_name logging_file_name
 ```
+
+
+## Requirements
+
+1. transformers 3.3.0
+2. datasets 1.1.3
+3. textattack
