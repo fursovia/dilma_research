@@ -46,7 +46,6 @@ Resulting folder:
 
 * roberta-base (all models from Huggingface works)
 
-
 # Script for Adversarial training
 
 1. Model is trained on Train part of dataset
@@ -75,6 +74,17 @@ Iteration over all attacks
 bash bin/attack_transfer.sh dataset_name logging_file_name
 ```
 
+## Discriminator
+Transformer model is used for discriminating output of the attack from original text. Input file must be output file from textattack package.
+
+```console
+!python src/discriminator/discriminator.py \
+--model_dir roberta-base \
+--n_splits 5 \
+--test_size 0.2 \
+--file_path path_to_output_from_textattack_attack.csv \
+--result_path path_to_save_discriminator_result.json
+```
 
 ## Requirements
 
