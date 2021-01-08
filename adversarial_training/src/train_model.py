@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import json
 import argparse
 import os
@@ -6,6 +7,7 @@ import torch
 import random
 import pyarrow as pa
 import numpy as np
+import pandas as pd
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -19,7 +21,7 @@ from transformers import (AutoTokenizer,
                           default_data_collator
                           )
 from torch.utils.data import DataLoader
-from datasets import Dataset, concatenate_datasets
+from datasets import Dataset, concatenate_datasets, load_from_disk
 from custom_trainer import CustomTrainer
 
 from utils import (random_seed,
@@ -171,6 +173,7 @@ def main():
         sentence1_key, sentence2_key = task_to_keys[data_args.task_name]
         data = get_data_huggingface(data_args)
         num_labels = len(set(data['train']['label']))
+
         data = data.map(preprocess_function, batched=True)
         data.set_format(
             type='torch',
@@ -181,7 +184,7 @@ def main():
         train_dataset = data['train']
         validation_dataset = data[other_args.validation_split_name]
 
-    else:  # from file
+    else:  # load dataset from file
         train_data = get_data_from_file(
             f"datasets/{data_args.task_name}/data/train.txt")
         num_labels = len(set([i[1] for i in train_data]))
@@ -194,8 +197,8 @@ def main():
         train_dataset.set_format(
             type='torch',
             columns=[
-                'input_ids',
                 'attention_mask',
+                'input_ids',
                 'label'])
 
         val_data = get_data_from_file(
@@ -208,22 +211,39 @@ def main():
         validation_dataset = Dataset(pa.Table.from_pydict(val_encodings))
         validation_dataset.set_format(
             type='torch', columns=[
-                'input_ids', 'attention_mask', 'label'])
+                'attention_mask', 'input_ids', 'label'])
 
     validation_dataset = validation_dataset.select(
         random.sample(
             list(np.arange(len(validation_dataset))),
-            min(2500, len(validation_dataset))
+            min(5000, len(validation_dataset))
         )
     )
 
     if other_args.adversarial_data_path is not None:
+        """
+        Load perturbed data and concat it to subset of train dataset
+        """
+
+        columns_to_remove = [i for i in train_dataset.features if i not in ['input_ids',
+                                                                            'attention_mask',
+                                                                            'label']]
+        train_dataset.remove_columns_(columns_to_remove)
+        train_dataset = Dataset.from_pandas(
+            pd.DataFrame(
+                {i: train_dataset.data[i]
+                    for i in train_dataset.data.column_names}
+            )
+        )
         train_dataset = train_dataset.select(
             random.sample(
                 list(np.arange(len(train_dataset))),
                 other_args.adversarial_training_original_data_amount
             )
         )
+        train_dataset.save_to_disk('path_to_save_dataset1')
+        train_dataset = load_from_disk('path_to_save_dataset1')
+
         adv_data = get_adv_data(other_args.adversarial_data_path)
         adv_encodings = tokenizer([i[0] for i in adv_data],
                                   truncation=True,
@@ -237,6 +257,12 @@ def main():
                 'input_ids',
                 'attention_mask',
                 'label'])
+        adv_dataset = Dataset.from_pandas(
+            pd.DataFrame(
+                {i: adv_dataset.data[i]
+                    for i in train_dataset.data.column_names}
+            )
+        )
         adv_dataset = adv_dataset.select(
             random.sample(
                 list(np.arange(len(adv_dataset))),
@@ -244,9 +270,18 @@ def main():
                     len(adv_dataset))
             )
         )
-        train_dataset = concatenate_datasets([train_dataset, adv_dataset])
+
+        adv_dataset.save_to_disk('path_to_save_dataset2')
+        adv_dataset = load_from_disk('path_to_save_dataset2')
+
+        train_dataset = concatenate_datasets([train_dataset,
+                                              adv_dataset])
 
     train_dataset = train_dataset.shuffle()
+    if other_args.adversarial_data_path is not None:
+        shutil.rmtree('path_to_save_dataset1')
+        shutil.rmtree('path_to_save_dataset2')
+    print(len(train_dataset), len(validation_dataset))
 
     config = AutoConfig.from_pretrained(
         model_args.config_name, num_labels=num_labels)
