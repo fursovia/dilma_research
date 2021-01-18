@@ -1,5 +1,5 @@
 import functools
-from typing import Sequence
+from typing import Sequence, List
 from multiprocessing import Pool
 from tqdm import tqdm
 
@@ -38,3 +38,33 @@ def pairwise_edit_distances(
             )
         )
     return np.array(distances)
+
+
+
+def normalized_accuracy_drop(wers: List[int], y_true: List[int], y_adv: List[int], gamma: float = 1.0,) -> float:
+    assert len(y_true) == len(y_adv)
+    nads = []
+    for wer, lab, alab in zip(wers, y_true, y_adv):
+        if wer > 0 and lab != alab:
+            nads.append(1 / wer ** gamma)
+        else:
+            nads.append(0.0)
+
+    return sum(nads) / len(nads)
+
+
+def misclassification_error(y_true: List[int], y_adv: List[int],) -> float:
+    misses = []
+    for lab, alab in zip(y_true, y_adv):
+        misses.append(float(lab != alab))
+
+    return sum(misses) / len(misses)
+
+
+def probability_drop(true_prob: List[float], adv_prob: List[float],) -> float:
+    prob_diffs = []
+    for tp, ap in zip(true_prob, adv_prob):
+        prob_diffs.append(tp - ap)
+
+    return sum(prob_diffs) / len(prob_diffs)
+
