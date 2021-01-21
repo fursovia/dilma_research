@@ -22,20 +22,21 @@
       "token_embedders": {
         "tokens": {
           "type": "embedding",
-          "embedding_dim": 128,
-          "trainable": true
+          "embedding_dim": 200,
+          "trainable": true,
+          "pretrained_file": null,
         }
       }
     },
     "seq2vec_encoder": {
         "type": "lstm",
         "input_size": 128,
-        "hidden_size": 256,
+        "hidden_size": 75,
         "num_layers": 1,
-        "dropout": 0.1,
+        "dropout": 0.3,
         "bidirectional": true
     },
-    "dropout": 0.1,
+    "dropout": 0.0,
   },
   "data_loader": {
     "shuffle": true,

@@ -318,11 +318,10 @@ description = "HuggingFace/Datasets is an open library of NLP datasets."
 name = "datasets"
 optional = false
 python-versions = "*"
-version = "1.1.2"
+version = "1.2.1"
 
 [package.dependencies]
 dill = "*"
-filelock = "*"
 multiprocess = "*"
 numpy = ">=1.17"
 pandas = "*"
@@ -335,15 +334,19 @@ xxhash = "*"
 python = "<3.7"
 version = "*"
 
+[package.dependencies.importlib-metadata]
+python = "<3.8"
+version = "*"
+
 [package.extras]
 apache-beam = ["apache-beam"]
 benchmarks = ["numpy (1.18.5)", "tensorflow (2.3.0)", "torch (1.6.0)", "transformers (3.0.2)"]
-dev = ["apache-beam", "absl-py", "bs4", "elasticsearch", "faiss-cpu", "langdetect", "mwparserfromhell", "nltk", "pytest", "pytest-xdist", "tensorflow", "torch", "tldextract", "transformers", "zstandard", "black", "isort", "flake8 (3.7.9)"]
+dev = ["apache-beam", "absl-py", "bs4", "conllu", "elasticsearch", "faiss-cpu", "langdetect", "lxml", "mwparserfromhell", "nltk", "openpyxl", "py7zr", "pytest", "pytest-xdist", "tensorflow", "torch", "tldextract", "transformers", "zstandard", "rarfile", "black", "isort", "flake8 (3.7.9)"]
 docs = ["recommonmark", "sphinx (3.1.2)", "sphinx-markdown-tables", "sphinx-rtd-theme (0.4.3)", "sphinx-copybutton"]
 quality = ["black", "isort", "flake8 (3.7.9)"]
 tensorflow = ["tensorflow (>=2.2.0)"]
 tensorflow_gpu = ["tensorflow-gpu (>=2.2.0)"]
-tests = ["apache-beam", "absl-py", "bs4", "elasticsearch", "faiss-cpu", "langdetect", "mwparserfromhell", "nltk", "pytest", "pytest-xdist", "tensorflow", "torch", "tldextract", "transformers", "zstandard"]
+tests = ["apache-beam", "absl-py", "bs4", "conllu", "elasticsearch", "faiss-cpu", "langdetect", "lxml", "mwparserfromhell", "nltk", "openpyxl", "py7zr", "pytest", "pytest-xdist", "tensorflow", "torch", "tldextract", "transformers", "zstandard", "rarfile"]
 torch = ["torch"]
 
 [[package]]
@@ -1708,7 +1711,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "8c6f94a7646866bf673b6f261fbd8287ef9c687912e443a80527792cf905ffc2"
+content-hash = "59f434be58bf66c2eacf3d09d60c4e2e94f7b18884e5d6ea0f16fde2fd8c1f02"
 python-versions = "^3.6.1"
 
 [metadata.files]
@@ -1870,8 +1873,8 @@ dataclasses-json = [
     {file = "dataclasses_json-0.5.2-py3-none-any.whl", hash = "sha256:b746c48d9d8e884e2a0ffa59c6220a1b21f94d4f9f12c839da0a8a0efd36dc19"},
 ]
 datasets = [
-    {file = "datasets-1.1.2-py3-none-any.whl", hash = "sha256:4970dbf3f3cad6f4e4ffbaa1184b8fb0ee700efbd2059b50da2d248bfe6def8d"},
-    {file = "datasets-1.1.2.tar.gz", hash = "sha256:265e007e315dcd3ef669fd56301ab0c6e863606c54dc4d37c2173bd05eba5efa"},
+    {file = "datasets-1.2.1-py3-none-any.whl", hash = "sha256:3596913baedca06ade3b2b057aa5b4ebca9ca8395135ee27060cf5c186450368"},
+    {file = "datasets-1.2.1.tar.gz", hash = "sha256:616412868b54479e59be4548edc196f5b55ad3872c3c364b4172052d0bdb1819"},
 ]
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
