@@ -21,13 +21,36 @@ task_to_keys = {
 }
 
 
+def get_load_text_file(task_name: str,
+                       split_name: str
+                       ) -> str:
+    text = ["import jsonlines",
+            "dataset = []",
+            f"with jsonlines.open('data/{task_name}/{split_name}.json', 'r') as reader:",
+            "    for items in reader:",
+            "        dataset.append(items)",
+            "dataset = [(element['text'], element['label']) for element in dataset]"
+            ]
+    return text
+
+
+def save_file_for_dataset_loading(task_name: str,
+                                  split_name: str
+                                  ) -> str:
+    with open(f"data/{task_name}/load_{split_name}.py", "w") as file_handler:
+        for item in get_load_text_file(task_name, split_name):
+            file_handler.write("{}\n".format(item))
+
+
 def get_train_valid(dataset, valid_split: str, namespace: list):
     train = []
     for i in dataset['train']:
-        train.append({('text' if key in ['text', 'sentence'] else key): (clean_text(i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
+        train.append({('text' if key in ['text', 'sentence'] else key): (clean_text(
+            i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
     valid = []
     for i in dataset[valid_split]:
-        valid.append({('text' if key in ['text', 'sentence'] else key): (clean_text(i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
+        valid.append({('text' if key in ['text', 'sentence'] else key): (clean_text(
+            i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
 
     return train, valid
 
@@ -53,10 +76,10 @@ def dataset_from_huggingface(dataset_name: str = None,
         train, train_size=substitute_fraction, stratify=train_labels, random_state=31
     )
 
-    write_jsonlines(train, str(Path('data', name, 'train.json')))
-    write_jsonlines(valid, str(Path('data', name, 'valid.json')))
-    write_jsonlines(substitute_train, str(
-        Path('data', name, 'substitute_train.json')))
+    for data, split_name in list(zip([train, valid, substitute_train], [
+                                 'train', 'valid', 'substitute_train'])):
+        write_jsonlines(data, str(Path('data', name, f"{split_name}.json")))
+        save_file_for_dataset_loading(name, split_name)
 
 
 def dstc_dataset(dstc_path: str,
@@ -86,11 +109,11 @@ def dstc_dataset(dstc_path: str,
         dataset['train'], train_size=substitute_fraction, stratify=train_labels, random_state=31
     )
 
-    write_jsonlines(dataset['train'], str(Path('data', 'dstc', 'train.json')))
-    write_jsonlines(dataset['validation'], str(
-        Path('data', 'dstc', 'valid.json')))
-    write_jsonlines(substitute_train, str(
-        Path('data', 'dstc', 'substitute_train.json')))
+    name = 'dstc'
+    for data, split_name in list(zip([dataset['train'], dataset['validation'], substitute_train], [
+                                 'train', 'valid', 'substitute_train'])):
+        write_jsonlines(data, str(Path('data', name, f"{split_name}.json")))
+        save_file_for_dataset_loading(name, split_name)
 
 
 app = typer.Typer()

@@ -34,8 +34,7 @@ def _save_args(args, save_path):
     :param: args. Dictionary of arguments to save.
     :save_path: Path to json file to write args to.
     """
-    final_args_dict = {k: v for k, v in vars(
-        args).items() if _is_writable_type(v)}
+    final_args_dict = {k: v for k, v in vars(args).items() if _is_writable_type(v)}
     with open(save_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(final_args_dict, indent=2) + "\n")
 
@@ -132,8 +131,7 @@ def _save_model(model, output_dir, weights_name, config_name):
     """
     model_to_save = model.module if hasattr(model, "module") else model
 
-    # If we save using the predefined names, we can load using
-    # `from_pretrained`
+    # If we save using the predefined names, we can load using `from_pretrained`
     output_model_file = os.path.join(output_dir, weights_name)
     output_config_file = os.path.join(output_dir, config_name)
 
@@ -163,10 +161,9 @@ def _get_eval_score(model, eval_dataloader, do_regression):
         input_ids, batch_labels = batch
         batch_labels = batch_labels.to(device)
         if isinstance(input_ids, dict):
-            # dataloader collates dict backwards. This is a workaround to get
+            ## dataloader collates dict backwards. This is a workaround to get
             # ids in the right shape for HuggingFace models
-            input_ids = {k: torch.stack(v).T.to(device)
-                         for k, v in input_ids.items()}
+            input_ids = {k: torch.stack(v).T.to(device) for k, v in input_ids.items()}
             with torch.no_grad():
                 batch_logits = model(**input_ids)[0]
         else:
@@ -182,8 +179,7 @@ def _get_eval_score(model, eval_dataloader, do_regression):
     labels = torch.tensor(labels)
 
     if do_regression:
-        pearson_correlation, pearson_p_value = scipy.stats.pearsonr(
-            logits, labels)
+        pearson_correlation, pearson_p_value = scipy.stats.pearsonr(logits, labels)
         return pearson_correlation
     else:
         preds = logits.argmax(dim=1)
@@ -209,6 +205,25 @@ def batch_encode(tokenizer, text_list):
     else:
         return [tokenizer.encode(text_input) for text_input in text_list]
 
+def get_load_model_file(output_dir: str,
+                    number_of_labels: int
+                    ) -> str:
+    text = ["import textattack",
+            "from textattack.shared import utils",
+            "import torch",
+            f"model = textattack.models.helpers.LSTMForClassification(max_seq_length=128,num_labels={number_of_labels})",
+            f"model.load_state_dict(torch.load('{output_dir}/pytorch_model.bin', map_location=utils.device))",
+            "model.eval()",
+            "model = textattack.models.wrappers.PyTorchModelWrapper(model, model.tokenizer)"
+            ]
+    return text
+
+def save_file_for_model_loading(output_dir: str,
+                                  number_of_labels: int
+                                  ) -> str:
+    with open(f"{output_dir}/load_lstm.py", "w") as file_handler:
+        for item in get_load_model_file(output_dir, number_of_labels):
+            file_handler.write("{}\n".format(item))
 
 def _make_dataloader(tokenizer, text, labels, batch_size):
     """Create torch DataLoader from list of input text and labels.
@@ -304,21 +319,14 @@ def train_model(args):
 
     # Get list of text and list of label (integers) from disk.
     if args.dataset_folder is not None:
-        train = load_jsonlines(
-            os.path.join(
-                args.dataset_folder,
-                'substitute_train.json'))
+        train = load_jsonlines(os.path.join(args.dataset_folder, 'substitute_train.json'))
         train_text = [i['text'] for i in train]
         train_labels = [i['label'] for i in train]
-        eval_dataset = load_jsonlines(
-            os.path.join(
-                args.dataset_folder,
-                'valid.json'))
+        eval_dataset = load_jsonlines(os.path.join(args.dataset_folder, 'valid.json'))
         eval_text = [i['text'] for i in eval_dataset]
         eval_labels = [i['label'] for i in eval_dataset]
     else:
-        train_text, train_labels, eval_text, eval_labels = dataset_from_args(
-            args)
+        train_text, train_labels, eval_text, eval_labels = dataset_from_args(args)
 
     # Filter labels
     if args.allowed_labels:
@@ -347,12 +355,11 @@ def train_model(args):
     # label_id_len = len(train_labels)
     label_set = set(train_labels)
     args.num_labels = len(label_set)
-    logger.info(
-        f"Loaded dataset. Found: {args.num_labels} labels: {sorted(label_set)}")
+    logger.info(f"Loaded dataset. Found: {args.num_labels} labels: {sorted(label_set)}")
+    save_file_for_model_loading(args.output_dir, args.num_labels)
 
     if isinstance(train_labels[0], float):
-        # TODO come up with a more sophisticated scheme for knowing when to do
-        # regression
+        # TODO come up with a more sophisticated scheme for knowing when to do regression
         logger.warn("Detected float labels. Doing regression.")
         args.num_labels = 1
         args.do_regression = True
@@ -375,9 +382,7 @@ def train_model(args):
     attack_class = attack_from_args(args)
     # We are adversarial training if the user specified an attack along with
     # the training args.
-    adversarial_training = (
-        attack_class is not None) and (
-        not args.check_robustness)
+    adversarial_training = (attack_class is not None) and (not args.check_robustness)
 
     # multi-gpu training
     if num_gpus > 1:
@@ -498,27 +503,19 @@ def train_model(args):
                 if (epoch - args.num_clean_epochs) % args.attack_period == 0:
                     # only generate a new adversarial training set every args.attack_period epochs
                     # after the clean epochs
-                    logger.info(
-                        "Attacking model to generate new training set...")
+                    logger.info("Attacking model to generate new training set...")
 
                     adv_attack_results = _generate_adversarial_examples(
-                        model_wrapper, attack_class, list(
-                            zip(train_text, train_labels))
+                        model_wrapper, attack_class, list(zip(train_text, train_labels))
                     )
-                    adv_train_text = [r.perturbed_text()
-                                      for r in adv_attack_results]
+                    adv_train_text = [r.perturbed_text() for r in adv_attack_results]
                     train_dataloader = _make_dataloader(
                         tokenizer, adv_train_text, train_labels, args.batch_size
                     )
             else:
-                logger.info(
-                    f"Running clean epoch {epoch+1}/{args.num_clean_epochs}")
+                logger.info(f"Running clean epoch {epoch+1}/{args.num_clean_epochs}")
 
-        prog_bar = tqdm.tqdm(
-            train_dataloader,
-            desc="Iteration",
-            position=0,
-            leave=True)
+        prog_bar = tqdm.tqdm(train_dataloader, desc="Iteration", position=0, leave=True)
 
         # Use these variables to track training accuracy during classification.
         correct_predictions = 0
@@ -527,7 +524,7 @@ def train_model(args):
             input_ids, labels = batch
             labels = labels.to(device)
             if isinstance(input_ids, dict):
-                # dataloader collates dict backwards. This is a workaround to get
+                ## dataloader collates dict backwards. This is a workaround to get
                 # ids in the right shape for HuggingFace models
                 input_ids = {
                     k: torch.stack(v).T.to(device) for k, v in input_ids.items()
@@ -553,8 +550,7 @@ def train_model(args):
             if global_step % args.tb_writer_step == 0:
                 tb_writer.add_scalar("loss", loss.item(), global_step)
                 if scheduler is not None:
-                    tb_writer.add_scalar(
-                        "lr", scheduler.get_last_lr()[0], global_step)
+                    tb_writer.add_scalar("lr", scheduler.get_last_lr()[0], global_step)
                 else:
                     tb_writer.add_scalar("lr", args.learning_rate, global_step)
             if global_step > 0:
@@ -584,13 +580,11 @@ def train_model(args):
         # Check accuracy after each epoch.
         # skip args.num_clean_epochs during adversarial training
         if (not adversarial_training) or (epoch >= args.num_clean_epochs):
-            eval_score = _get_eval_score(
-                model, eval_dataloader, args.do_regression)
+            eval_score = _get_eval_score(model, eval_dataloader, args.do_regression)
             tb_writer.add_scalar("epoch_eval_score", eval_score, epoch)
 
             if args.checkpoint_every_epoch:
-                _save_model_checkpoint(
-                    model, args.output_dir, args.global_step)
+                _save_model_checkpoint(model, args.output_dir, args.global_step)
 
             logger.info(
                 f"Eval {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
@@ -599,13 +593,8 @@ def train_model(args):
                 args.best_eval_score = eval_score
                 args.best_eval_score_epoch = epoch
                 args.epochs_since_best_eval_score = 0
-                _save_model(
-                    model,
-                    args.output_dir,
-                    args.weights_name,
-                    args.config_name)
-                logger.info(
-                    f"Best acc found. Saved model to {args.output_dir}.")
+                _save_model(model, args.output_dir, args.weights_name, args.config_name)
+                logger.info(f"Best acc found. Saved model to {args.output_dir}.")
                 _save_args(args, args_save_path)
                 logger.info(f"Saved updated args to {args_save_path}")
             else:
@@ -634,17 +623,13 @@ def train_model(args):
                 attack_types["SuccessfulAttackResult"]
                 + attack_types["FailedAttackResult"]
             )
-            adv_succ_rate = attack_types["SuccessfulAttackResult"] / \
-                total_attacks
+            adv_succ_rate = attack_types["SuccessfulAttackResult"] / total_attacks
             after_attack_acc = attack_types["FailedAttackResult"] / len(
                 adv_attack_results
             )
 
             tb_writer.add_scalar("robustness_test_acc", adv_acc, global_step)
-            tb_writer.add_scalar(
-                "robustness_total_attacks",
-                total_attacks,
-                global_step)
+            tb_writer.add_scalar("robustness_total_attacks", total_attacks, global_step)
             tb_writer.add_scalar(
                 "robustness_attack_succ_rate", adv_succ_rate, global_step
             )
@@ -658,22 +643,14 @@ def train_model(args):
     logger.info("Finished training. Re-loading and evaluating model from disk.")
     model_wrapper = model_from_args(args, args.num_labels)
     model = model_wrapper.model
-    model.load_state_dict(
-        torch.load(
-            os.path.join(
-                args.output_dir,
-                args.weights_name)))
+    model.load_state_dict(torch.load(os.path.join(args.output_dir, args.weights_name)))
     eval_score = _get_eval_score(model, eval_dataloader, args.do_regression)
     logger.info(
         f"Saved model {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
     )
 
     if args.save_last:
-        _save_model(
-            model,
-            args.output_dir,
-            args.weights_name,
-            args.config_name)
+        _save_model(model, args.output_dir, args.weights_name, args.config_name)
 
     # end of training, save tokenizer
     try:
@@ -690,8 +667,8 @@ def train_model(args):
     _save_args(args, args_save_path)
     tb_writer.close()
     logger.info(f"Wrote final training args to {args_save_path}.")
-
-
+    
+    
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -837,7 +814,7 @@ def parse_arguments():
     parser.add_argument(
         "--max-length",
         type=int,
-        default=512,
+        default=128,
         help="Maximum length of a sequence (anything beyond this will "
         "be truncated)",
     )
@@ -887,3 +864,4 @@ def parse_arguments():
 if __name__ == '__main__':
     args = parse_arguments()
     train_model(args)
+
