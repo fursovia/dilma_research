@@ -4,6 +4,7 @@ import logging
 import math
 import os
 import random
+import argparse
 
 import numpy as np
 import scipy
@@ -21,6 +22,8 @@ from textattack.commands.train_model.train_args_helpers import (
     write_readme,
 )
 
+from dilma.utils.data import load_jsonlines
+
 device = textattack.shared.utils.device
 logger = textattack.shared.logger
 
@@ -31,7 +34,8 @@ def _save_args(args, save_path):
     :param: args. Dictionary of arguments to save.
     :save_path: Path to json file to write args to.
     """
-    final_args_dict = {k: v for k, v in vars(args).items() if _is_writable_type(v)}
+    final_args_dict = {k: v for k, v in vars(
+        args).items() if _is_writable_type(v)}
     with open(save_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(final_args_dict, indent=2) + "\n")
 
@@ -128,7 +132,8 @@ def _save_model(model, output_dir, weights_name, config_name):
     """
     model_to_save = model.module if hasattr(model, "module") else model
 
-    # If we save using the predefined names, we can load using `from_pretrained`
+    # If we save using the predefined names, we can load using
+    # `from_pretrained`
     output_model_file = os.path.join(output_dir, weights_name)
     output_config_file = os.path.join(output_dir, config_name)
 
@@ -153,12 +158,15 @@ def _get_eval_score(model, eval_dataloader, do_regression):
     correct = 0
     logits = []
     labels = []
-    for input_ids, batch_labels in eval_dataloader:
+#     for input_ids, batch_labels in eval_dataloader:
+    for step, batch in enumerate(eval_dataloader):
+        input_ids, batch_labels = batch
         batch_labels = batch_labels.to(device)
         if isinstance(input_ids, dict):
-            ## dataloader collates dict backwards. This is a workaround to get
+            # dataloader collates dict backwards. This is a workaround to get
             # ids in the right shape for HuggingFace models
-            input_ids = {k: torch.stack(v).T.to(device) for k, v in input_ids.items()}
+            input_ids = {k: torch.stack(v).T.to(device)
+                         for k, v in input_ids.items()}
             with torch.no_grad():
                 batch_logits = model(**input_ids)[0]
         else:
@@ -174,7 +182,8 @@ def _get_eval_score(model, eval_dataloader, do_regression):
     labels = torch.tensor(labels)
 
     if do_regression:
-        pearson_correlation, pearson_p_value = scipy.stats.pearsonr(logits, labels)
+        pearson_correlation, pearson_p_value = scipy.stats.pearsonr(
+            logits, labels)
         return pearson_correlation
     else:
         preds = logits.argmax(dim=1)
@@ -294,11 +303,22 @@ def train_model(args):
     logger.info(f"Writing logs to {log_txt_path}.")
 
     # Get list of text and list of label (integers) from disk.
-    if args.path is not None:
-        # do what I should do
-        pass
+    if args.dataset_folder is not None:
+        train = load_jsonlines(
+            os.path.join(
+                args.dataset_folder,
+                'substitute_train.json'))
+        train_text = [i['text'] for i in train]
+        train_labels = [i['label'] for i in train]
+        eval_dataset = load_jsonlines(
+            os.path.join(
+                args.dataset_folder,
+                'valid.json'))
+        eval_text = [i['text'] for i in eval_dataset]
+        eval_labels = [i['label'] for i in eval_dataset]
     else:
-        train_text, train_labels, eval_text, eval_labels = dataset_from_args(args)
+        train_text, train_labels, eval_text, eval_labels = dataset_from_args(
+            args)
 
     # Filter labels
     if args.allowed_labels:
@@ -327,10 +347,12 @@ def train_model(args):
     # label_id_len = len(train_labels)
     label_set = set(train_labels)
     args.num_labels = len(label_set)
-    logger.info(f"Loaded dataset. Found: {args.num_labels} labels: {sorted(label_set)}")
+    logger.info(
+        f"Loaded dataset. Found: {args.num_labels} labels: {sorted(label_set)}")
 
     if isinstance(train_labels[0], float):
-        # TODO come up with a more sophisticated scheme for knowing when to do regression
+        # TODO come up with a more sophisticated scheme for knowing when to do
+        # regression
         logger.warn("Detected float labels. Doing regression.")
         args.num_labels = 1
         args.do_regression = True
@@ -353,7 +375,9 @@ def train_model(args):
     attack_class = attack_from_args(args)
     # We are adversarial training if the user specified an attack along with
     # the training args.
-    adversarial_training = (attack_class is not None) and (not args.check_robustness)
+    adversarial_training = (
+        attack_class is not None) and (
+        not args.check_robustness)
 
     # multi-gpu training
     if num_gpus > 1:
@@ -474,19 +498,27 @@ def train_model(args):
                 if (epoch - args.num_clean_epochs) % args.attack_period == 0:
                     # only generate a new adversarial training set every args.attack_period epochs
                     # after the clean epochs
-                    logger.info("Attacking model to generate new training set...")
+                    logger.info(
+                        "Attacking model to generate new training set...")
 
                     adv_attack_results = _generate_adversarial_examples(
-                        model_wrapper, attack_class, list(zip(train_text, train_labels))
+                        model_wrapper, attack_class, list(
+                            zip(train_text, train_labels))
                     )
-                    adv_train_text = [r.perturbed_text() for r in adv_attack_results]
+                    adv_train_text = [r.perturbed_text()
+                                      for r in adv_attack_results]
                     train_dataloader = _make_dataloader(
                         tokenizer, adv_train_text, train_labels, args.batch_size
                     )
             else:
-                logger.info(f"Running clean epoch {epoch+1}/{args.num_clean_epochs}")
+                logger.info(
+                    f"Running clean epoch {epoch+1}/{args.num_clean_epochs}")
 
-        prog_bar = tqdm.tqdm(train_dataloader, desc="Iteration", position=0, leave=True)
+        prog_bar = tqdm.tqdm(
+            train_dataloader,
+            desc="Iteration",
+            position=0,
+            leave=True)
 
         # Use these variables to track training accuracy during classification.
         correct_predictions = 0
@@ -495,7 +527,7 @@ def train_model(args):
             input_ids, labels = batch
             labels = labels.to(device)
             if isinstance(input_ids, dict):
-                ## dataloader collates dict backwards. This is a workaround to get
+                # dataloader collates dict backwards. This is a workaround to get
                 # ids in the right shape for HuggingFace models
                 input_ids = {
                     k: torch.stack(v).T.to(device) for k, v in input_ids.items()
@@ -521,7 +553,8 @@ def train_model(args):
             if global_step % args.tb_writer_step == 0:
                 tb_writer.add_scalar("loss", loss.item(), global_step)
                 if scheduler is not None:
-                    tb_writer.add_scalar("lr", scheduler.get_last_lr()[0], global_step)
+                    tb_writer.add_scalar(
+                        "lr", scheduler.get_last_lr()[0], global_step)
                 else:
                     tb_writer.add_scalar("lr", args.learning_rate, global_step)
             if global_step > 0:
@@ -551,11 +584,13 @@ def train_model(args):
         # Check accuracy after each epoch.
         # skip args.num_clean_epochs during adversarial training
         if (not adversarial_training) or (epoch >= args.num_clean_epochs):
-            eval_score = _get_eval_score(model, eval_dataloader, args.do_regression)
+            eval_score = _get_eval_score(
+                model, eval_dataloader, args.do_regression)
             tb_writer.add_scalar("epoch_eval_score", eval_score, epoch)
 
             if args.checkpoint_every_epoch:
-                _save_model_checkpoint(model, args.output_dir, args.global_step)
+                _save_model_checkpoint(
+                    model, args.output_dir, args.global_step)
 
             logger.info(
                 f"Eval {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
@@ -564,8 +599,13 @@ def train_model(args):
                 args.best_eval_score = eval_score
                 args.best_eval_score_epoch = epoch
                 args.epochs_since_best_eval_score = 0
-                _save_model(model, args.output_dir, args.weights_name, args.config_name)
-                logger.info(f"Best acc found. Saved model to {args.output_dir}.")
+                _save_model(
+                    model,
+                    args.output_dir,
+                    args.weights_name,
+                    args.config_name)
+                logger.info(
+                    f"Best acc found. Saved model to {args.output_dir}.")
                 _save_args(args, args_save_path)
                 logger.info(f"Saved updated args to {args_save_path}")
             else:
@@ -594,13 +634,17 @@ def train_model(args):
                 attack_types["SuccessfulAttackResult"]
                 + attack_types["FailedAttackResult"]
             )
-            adv_succ_rate = attack_types["SuccessfulAttackResult"] / total_attacks
+            adv_succ_rate = attack_types["SuccessfulAttackResult"] / \
+                total_attacks
             after_attack_acc = attack_types["FailedAttackResult"] / len(
                 adv_attack_results
             )
 
             tb_writer.add_scalar("robustness_test_acc", adv_acc, global_step)
-            tb_writer.add_scalar("robustness_total_attacks", total_attacks, global_step)
+            tb_writer.add_scalar(
+                "robustness_total_attacks",
+                total_attacks,
+                global_step)
             tb_writer.add_scalar(
                 "robustness_attack_succ_rate", adv_succ_rate, global_step
             )
@@ -614,14 +658,22 @@ def train_model(args):
     logger.info("Finished training. Re-loading and evaluating model from disk.")
     model_wrapper = model_from_args(args, args.num_labels)
     model = model_wrapper.model
-    model.load_state_dict(torch.load(os.path.join(args.output_dir, args.weights_name)))
+    model.load_state_dict(
+        torch.load(
+            os.path.join(
+                args.output_dir,
+                args.weights_name)))
     eval_score = _get_eval_score(model, eval_dataloader, args.do_regression)
     logger.info(
         f"Saved model {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
     )
 
     if args.save_last:
-        _save_model(model, args.output_dir, args.weights_name, args.config_name)
+        _save_model(
+            model,
+            args.output_dir,
+            args.weights_name,
+            args.config_name)
 
     # end of training, save tokenizer
     try:
@@ -640,6 +692,198 @@ def train_model(args):
     logger.info(f"Wrote final training args to {args_save_path}.")
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model",
+        type=str,
+        required=True,
+        help="directory of model to train",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        required=True,
+        help="directory to save trained model",
+    )
+    parser.add_argument(
+        "--dataset-folder",
+        type=str,
+        default=None,
+        help="path to dataset, created in create_classification_datasets.py script",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        required=False,
+        default="yelp",
+        help="dataset for training; will be loaded from "
+        "`datasets` library. if dataset has a subset, separate with a colon. "
+        " ex: `glue^sst2` or `rotten_tomatoes`",
+    )
+    parser.add_argument(
+        "--pct-dataset",
+        type=float,
+        default=1.0,
+        help="Fraction of dataset to use during training ([0., 1.])",
+    )
+    parser.add_argument(
+        "--dataset-train-split",
+        "--train-split",
+        type=str,
+        default="",
+        help="train dataset split, if non-standard "
+        "(can automatically detect 'train'",
+    )
+    parser.add_argument(
+        "--dataset-dev-split",
+        "--dataset-eval-split",
+        "--dev-split",
+        type=str,
+        default="",
+        help="val dataset split, if non-standard "
+        "(can automatically detect 'dev', 'validation', 'eval')",
+    )
+    parser.add_argument(
+        "--tb-writer-step",
+        type=int,
+        default=1,
+        help="Number of steps before writing to tensorboard",
+    )
+    parser.add_argument(
+        "--checkpoint-steps",
+        type=int,
+        default=-1,
+        help="save model after this many steps (-1 for no checkpointing)",
+    )
+    parser.add_argument(
+        "--checkpoint-every-epoch",
+        action="store_true",
+        default=False,
+        help="save model checkpoint after each epoch",
+    )
+    parser.add_argument(
+        "--save-last",
+        action="store_true",
+        default=False,
+        help="Overwrite the saved model weights after the final epoch.",
+    )
+    parser.add_argument(
+        "--num-train-epochs",
+        "--epochs",
+        type=int,
+        default=100,
+        help="Total number of epochs to train for",
+    )
+    parser.add_argument(
+        "--attack",
+        type=str,
+        default=None,
+        help="Attack recipe to use (enables adversarial training)",
+    )
+    parser.add_argument(
+        "--check-robustness",
+        default=False,
+        action="store_true",
+        help="run attack each epoch to measure robustness, but train normally",
+    )
+    parser.add_argument(
+        "--num-clean-epochs",
+        type=int,
+        default=1,
+        help="Number of epochs to train on the clean dataset before adversarial training (N/A if --attack unspecified)",
+    )
+    parser.add_argument(
+        "--attack-period",
+        type=int,
+        default=1,
+        help="How often (in epochs) to generate a new adversarial training set (N/A if --attack unspecified)",
+    )
+    parser.add_argument(
+        "--augment",
+        type=str,
+        default=None,
+        help="Augmentation recipe to use",
+    )
+    parser.add_argument(
+        "--pct-words-to-swap",
+        type=float,
+        default=0.1,
+        help="Percentage of words to modify when using data augmentation (--augment)",
+    )
+    parser.add_argument(
+        "--transformations-per-example",
+        type=int,
+        default=4,
+        help="Number of augmented versions to create from each example when using data augmentation (--augment)",
+    )
+    parser.add_argument(
+        "--allowed-labels",
+        type=int,
+        nargs="*",
+        default=[],
+        help="Labels allowed for training (examples with other labels will be discarded)",
+    )
+    parser.add_argument(
+        "--early-stopping-epochs",
+        type=int,
+        default=-1,
+        help="Number of epochs validation must increase"
+        " before stopping early (-1 for no early stopping)",
+    )
+    parser.add_argument(
+        "--batch-size", type=int, default=128, help="Batch size for training"
+    )
+    parser.add_argument(
+        "--max-length",
+        type=int,
+        default=512,
+        help="Maximum length of a sequence (anything beyond this will "
+        "be truncated)",
+    )
+    parser.add_argument(
+        "--learning-rate",
+        "--lr",
+        type=float,
+        default=2e-5,
+        help="Learning rate for Adam Optimization",
+    )
+    parser.add_argument(
+        "--grad-accum-steps",
+        type=int,
+        default=1,
+        help="Number of steps to accumulate gradients before optimizing, "
+        "advancing scheduler, etc.",
+    )
+    parser.add_argument(
+        "--warmup-proportion",
+        type=float,
+        default=0.1,
+        help="Warmup proportion for linear scheduling",
+    )
+    parser.add_argument(
+        "--config-name",
+        type=str,
+        default="config.json",
+        help="Filename to save BERT config as",
+    )
+    parser.add_argument(
+        "--weights-name",
+        type=str,
+        default="pytorch_model.bin",
+        help="Filename to save model weights as",
+    )
+    parser.add_argument(
+        "--enable-wandb",
+        default=False,
+        action="store_true",
+        help="log metrics to Weights & Biases",
+    )
+    parser.add_argument("--random-seed", default=21, type=int)
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == '__main__':
-    # argparse
-    pass
+    args = parse_arguments()
+    train_model(args)

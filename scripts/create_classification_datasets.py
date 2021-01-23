@@ -24,10 +24,10 @@ task_to_keys = {
 def get_train_valid(dataset, valid_split: str, namespace: list):
     train = []
     for i in dataset['train']:
-        train.append({key: i[key] for key in namespace})
+        train.append({('text' if key in ['text', 'sentence'] else key): (clean_text(i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
     valid = []
     for i in dataset[valid_split]:
-        valid.append({key: i[key] for key in namespace})
+        valid.append({('text' if key in ['text', 'sentence'] else key): (clean_text(i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
 
     return train, valid
 
@@ -63,7 +63,7 @@ def dstc_dataset(dstc_path: str,
                  substitute_fraction: float = 0.5):
     Path('data', 'dstc').mkdir(parents=True, exist_ok=True)
     dstc = json.load(Path(dstc_path).open('r'))
-    X = [i['text'] for i in dstc]
+    X = [clean_text(i['text']) for i in dstc]
     y = [i['intent'] for i in dstc]
 
     intent2idx = {
