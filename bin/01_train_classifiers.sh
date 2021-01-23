@@ -18,6 +18,8 @@ CONFIG_NAME=$(basename ${CONFIG_PATH})
 CONFIG_NAME="${CONFIG_NAME%.*}"
 
 #now don't work with qqp
+# 1) TRAIN SUBSTITUTE CLASSIFIERS
+# TODO: early stopping?
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
     PYTHONPATH=. python dilma/commands/train_textattack.py \
         --model lstm \
@@ -26,6 +28,10 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
         --epochs 50 \
         --batch-size 128 \
         --learning-rate 5e-4
+done
+
+
+for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 
     EXP_NAME=${DATE}-${dataset}-${CONFIG_NAME}
     LOG_DIR=./logs/${EXP_NAME}
@@ -38,3 +44,7 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 
     cp ${LOG_DIR}/model.tar.gz ./presets/${dataset}.tar.gz
 done
+
+
+# 2) TRAIN TARGET CLASSIFIER (THE ONES TEXTATTACK DOESNT HAVE)
+

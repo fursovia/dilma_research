@@ -119,14 +119,19 @@ def dstc_dataset(dstc_path: str,
 app = typer.Typer()
 
 
+# TODO
+# add test split (from what?)
+# args.dataset_from_huggingface instead? (low priority)
+# substitute_fraction from main
+
 @app.command()
 def main(substitute_fraction: float = 0.5, dstc_path: str = None):
     Path('data').mkdir(parents=True, exist_ok=True)
 
     dataset_from_huggingface('glue', 'sst2', valid_split='validation')
-    dataset_from_huggingface('glue', 'qqp', valid_split='validation')
     dataset_from_huggingface('rotten_tomatoes', valid_split='validation')
     dataset_from_huggingface('ag_news', valid_split='test')
+    dataset_from_huggingface('glue', 'qqp', valid_split='validation')
     dstc_dataset(dstc_path)
 
 
