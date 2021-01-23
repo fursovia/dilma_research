@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
 # 1. download datasets using huggingface
-# 2. covert datasets to the format we use
+# 2. convert datasets to the format we use
 # 3. save datasets to ./data
 
-wget my_link.com/data.zip
-unzip ...
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1v3leUGIR7ObKqa7-2hqYQt2f1wVR-G5S' -O dstc.zip
+unzip dstc.zip
+rm dstc.zip
 
-PYTHONPATH=. python scripts/create_classification_datasets.py $PATH
+PYTHONPATH=. python scripts/create_classification_datasets.py --substitute-fraction 0.5 --dstc-path dstc.json
 
 
 # добавить все датасеты в скрипт (+ substitute frac)
