@@ -35,4 +35,6 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
       allennlp train ${CONFIG_PATH} \
       --serialization-dir ${LOG_DIR} \
       --include-package dilma
+
+    cp ${LOG_DIR}/model.tar.gz ./presets/${dataset}.tar.gz
 done
