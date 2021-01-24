@@ -304,7 +304,7 @@ def main():
         model.parameters(),
         lr=training_args.learning_rate)
 
-    if other_args.optimizer_path is not None:# load optimizer
+    if other_args.optimizer_path is not None:  # load optimizer
         if Path(other_args.optimizer_path).is_file():
             def optimizer_to(optim, device):
                 for param in optim.state.values():

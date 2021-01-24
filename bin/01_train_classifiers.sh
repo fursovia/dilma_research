@@ -49,7 +49,7 @@ done
 # 2) TRAIN TARGET CLASSIFIER (THE ONES TEXTATTACK DOESNT HAVE)
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
-    PYTHONPATH=. python src/train_model.py \
+    PYTHONPATH=. python scripts/train_model.py \
         --model_name_or_path 'roberta-base' \
         --config_name 'roberta-base' \
         --tokenizer_name 'roberta-base' \
