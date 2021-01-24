@@ -40,11 +40,12 @@ else:
 
 
 class CustomTrainer(Trainer):
-    def train(self, model_path: Optional[str] = None, 
-              trial: Union["optuna.Trial",Dict[str, Any]] = None, 
+    def train(self, model_path: Optional[str] = None,
+              trial: Union["optuna.Trial", Dict[str, Any]] = None,
               stat_file_for_saving: Optional[str] = None,
-              early_stopping_epochs: Optional[int] = 2
-             ):
+              early_stopping_epochs: Optional[int] = 2,
+              use_early_stopping: Optional[bool] = True
+              ):
         """
         Main training entry point.
 
@@ -201,7 +202,7 @@ class CustomTrainer(Trainer):
                             int(np.ceil(num_train_epochs)),
                             desc="Epoch",
                             disable=disable_tqdm)
-        
+
         for epoch in range(epochs_trained, int(np.ceil(num_train_epochs))):
 
             if isinstance(train_dataloader, DataLoader) and isinstance(
@@ -214,7 +215,7 @@ class CustomTrainer(Trainer):
                 epoch_iterator = parallel_loader
             else:
                 epoch_iterator = train_dataloader
-            
+
             # Reset the past mems state at the beginning of each epoch if
             # necessary.
             if self.args.past_index >= 0:
@@ -229,10 +230,10 @@ class CustomTrainer(Trainer):
                     steps_trained_in_current_epoch -= 1
                     epoch_pbar.update(1)
                     continue
-                
+
                 tr_loss += self.training_step(model, inputs)
                 self.total_flos += self.floating_point_ops(inputs)
-                    
+
                 if (step + 1) % self.args.gradient_accumulation_steps == 0 or (
                     # last step in epoch but step is always smaller than
                     # gradient_accumulation_steps
@@ -362,13 +363,15 @@ class CustomTrainer(Trainer):
                     )
             if self.args.max_steps > 0 and self.global_step >= self.args.max_steps:
                 break
-            if epoch > 1:
-                if validation_stat['loss'][epoch - early_stopping_epochs:epoch+1].argmax() == early_stopping_epochs:
-                    break
+            if use_early_stopping:
+                if epoch > 1:
+                    if validation_stat['loss'][epoch - early_stopping_epochs:epoch +
+                                               1].argmax() == early_stopping_epochs:
+                        break
 
         train_pbar.close()
         if stat_file_for_saving is not None:
-            json.dump({i: j[:epoch+1].tolist() for i, j in validation_stat.items()},
+            json.dump({i: j[:epoch + 1].tolist() for i, j in validation_stat.items()},
                       Path(self.args.output_dir, stat_file_for_saving).open('w'))
 
         if self.args.past_index and hasattr(self, "_past"):
@@ -378,4 +381,3 @@ class CustomTrainer(Trainer):
         logger.info(
             "\n\nTraining completed. Do not forget to share your model on huggingface.co/models =)\n\n")
         return TrainOutput(self.global_step, tr_loss.item() / self.global_step)
-

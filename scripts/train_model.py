@@ -139,6 +139,10 @@ class OtherArguments:
             "help": "Path to load optimizer, if it already was used"},
         default=None,
     )
+    use_early_stopping: bool = field(
+        metadata={"stop if val. loss increases during last n epochs"},
+        default=True,
+    )
 
 
 def main():
@@ -348,7 +352,8 @@ def main():
             trainer.train(
                 model_path=model_args.model_name_or_path if os.path.isdir(
                     model_args.model_name_or_path) else None,
-                stat_file_for_saving=other_args.stat_file_for_saving
+                stat_file_for_saving=other_args.stat_file_for_saving,
+                use_early_stopping=other_args.use_early_stopping
             )
         else:
             trainer.train(

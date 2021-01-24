@@ -52,7 +52,8 @@ for attacker in "deepwordbug" "textbugger" "pwws" "hotflip"; do
             --adversarial_data_path ${ADV_TRAIN_DIR}/lstm_${dataset}_${attacker}.csv
             --adversarial_training_original_data_amount ${num_examples} \
             --adversarial_training_perturbed_data_amount ${num_examples} \
-            --use_custom_trainer
+            --use_custom_trainer \
+            --use_early_stopping False
 
 
         echo "Train ${attacker} end num_examples ${num_examples}" >> ${logger_name}.txt
