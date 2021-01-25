@@ -24,6 +24,8 @@ done
 # 2. convert output files from textattack to our format (save to ./results folder) [!]
 # 3. evaluate attacks using `dilma/commands/evaluate.py` script
 ## (in white-box/black-box scenario. SOTA models to fool)
+
+PYTHONPATH=. python dilma/commands/evaluate.py sst2__dilma_data.json --save-to kek.json --target-clf-path sst2
 # 4. save table with metrics to ./results folder
 # 5*. attack M examples of the train (!) set (will be needed for adversarial training and detection)
 ADV_TRAIN_DIR='adv_training_data'

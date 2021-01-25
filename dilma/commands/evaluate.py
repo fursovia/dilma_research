@@ -22,18 +22,22 @@ NDIGITS = 3
 
 def get_predictor(archive_path: str) -> Predictor:
     archive = load_archive(archive_path, cuda_device=-1)
-    predictor = Predictor.from_archive(archive=archive, predictor_name="text_classification")
+    predictor = Predictor.from_archive(
+        archive=archive, predictor_name="text_classification")
     return predictor
 
 
 def get_metrics(output, y_true, y_adv):
-    nad = normalized_accuracy_drop(wers=output["wer"], y_true=y_true, y_adv=y_adv)
+    nad = normalized_accuracy_drop(
+        wers=output["wer"], y_true=y_true, y_adv=y_adv)
     typer.echo(f"NAD = {nad:.2f}")
 
     misclf_error = misclassification_error(y_true=y_true, y_adv=y_adv)
     typer.echo(f"Misclassification Error = {misclf_error:.2f}")
 
-    prob_drop = probability_drop(true_prob=output["probability"], adv_prob=output["adversarial_probability"])
+    prob_drop = probability_drop(
+        true_prob=output["probability"],
+        adv_prob=output["adversarial_probability"])
     typer.echo(f"Probability drop = {prob_drop:.2f}")
 
     mean_wer = float(np.mean(output["wer"]))
@@ -55,7 +59,8 @@ def main(
     output = pd.DataFrame(output).drop(columns="history")
 
     y_true = [output["data"][i]["label"] for i in range(len(output))]
-    y_adv = [output["adversarial_data"][i]["label"] for i in range(len(output))]
+    y_adv = [output["adversarial_data"][i]["label"]
+             for i in range(len(output))]
 
     if target_clf_path is not None:
         # change probability

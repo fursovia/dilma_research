@@ -13,7 +13,7 @@ def clean_text(text: str) -> str:
 
 def pad_punctuation(string: str) -> str:
     string = re.sub('([.,!?()])', r' \1 ', string)
-    string = re.sub('\s{2,}', ' ', string)
+    string = re.sub(r'\s{2,}', ' ', string)
     return string
 
 
@@ -29,3 +29,7 @@ def write_jsonlines(data: Sequence[Dict[str, Any]], path: str) -> None:
     with jsonlines.open(path, "w") as writer:
         for ex in data:
             writer.write(ex)
+
+
+def clear_texts(list_of_texts: List[str]) -> List[str]:
+    return [re.sub(r"(\[\[)|(\]\])", "", i) for i in list_of_texts]

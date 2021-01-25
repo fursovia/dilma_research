@@ -14,16 +14,13 @@ from sklearn.metrics import accuracy_score
 from transformers import (AutoTokenizer,
                           AutoConfig,
                           AutoModelForSequenceClassification,
-                          Trainer,
                           HfArgumentParser,
-                          TrainingArguments,
-                          get_linear_schedule_with_warmup,
                           default_data_collator
                           )
 from torch.utils.data import DataLoader
 from datasets import Dataset
 
-from utils import clear_texts
+from dilma.utils.data import clear_texts
 
 
 @dataclass
