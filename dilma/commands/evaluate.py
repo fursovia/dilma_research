@@ -21,7 +21,8 @@ from dilma.utils.metrics import (
     bert_score,
     calculate_wer,
     ngam_statistics,
-    stanza_metrics
+    stanza_metrics,
+    sentence_bert
 )
 
 from scripts.eval_attack import create_dataloader, run_validation
@@ -30,8 +31,7 @@ from scripts.eval_attack import create_dataloader, run_validation
 DATASET_NAME_TO_MODEL_NAME = {
     "sst2": "textattack/roberta-base-SST-2",
     "ag_news": "textattack/roberta-base-ag-news",
-    "rotten_tomatoes": "textattack/roberta-base-rotten-tomatoes",
-    "dstc": "models/dstc/bert"
+    "rotten_tomatoes": "textattack/roberta-base-rotten-tomatoes"
 }
 NDIGITS = 3
 
@@ -80,6 +80,10 @@ def get_metrics(original_text: List[str] = None,
     bert_score_result = bert_score(original_text, perturbed_text)
     typer.echo(f"Mean Bert Score = {bert_score_result:.3f}")
     metrics['BertScore'] = bert_score_result
+
+    sentence_bert_cosine = sentence_bert(original_text, perturbed_text)
+    typer.echo(f"Mean sbert cosine distance = {sentence_bert_cosine:.3f}")
+    metrics['Sentence_Bert_cos'] = sentence_bert_cosine
 
     k_dist, k_ent = ngam_statistics(original_text, perturbed_text)
     typer.echo(f"k_dist : {k_dist}")

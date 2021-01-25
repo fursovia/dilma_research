@@ -1,5 +1,6 @@
 # !pip install bert_score
 # !pip install stanza
+# !pip install -U sentence-transformers
 import functools
 from typing import Sequence, List
 from multiprocessing import Pool
@@ -8,8 +9,10 @@ from tqdm import tqdm
 import numpy as np
 import Levenshtein
 from bert_score import score
+from sentence_transformers import SentenceTransformer, util
 from nltk import ngrams
 from nltk.tokenize.treebank import TreebankWordTokenizer
+import tqdm
 
 
 @functools.lru_cache(maxsize=5000)
@@ -91,6 +94,21 @@ def bert_score(sequences: List[str], adversarial_sequences: List[str]):
         'R': R.mean().item(),
         'F1': F1.mean().item()}
     return bertscore['F1']
+
+
+def sentence_bert(sequences: List[str], adversarial_sequences: List[str]):
+    '''
+    return:
+            SBERT_embeddings_cosine_similarity
+    '''
+    sbert_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
+    metric = list()
+    for text_1, text_2 in tqdm.tqdm(zip(sequences, adversarial_sequences)):
+        embeddings_1 = sbert_model.encode([text_1], convert_to_tensor=True)
+        embeddings_2 = sbert_model.encode([text_2], convert_to_tensor=True)
+        cosine_scores = util.pytorch_cos_sim(embeddings_1, embeddings_2)
+        metric.append(float(cosine_scores[0][0]))
+    return np.mean(metric)
 
 
 def dist_k(utts: List[str], tokenizer, k: int) -> float:
