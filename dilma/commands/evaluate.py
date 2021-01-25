@@ -80,7 +80,7 @@ def get_metrics(original_text: List[str] = None,
     bert_score_result = bert_score(original_text, perturbed_text)
     typer.echo(f"Mean Bert Score = {bert_score_result:.3f}")
     metrics['BertScore'] = bert_score_result
-
+    
     sentence_bert_cosine = sentence_bert(original_text, perturbed_text)
     typer.echo(f"Mean sbert cosine distance = {sentence_bert_cosine:.3f}")
     metrics['Sentence_Bert_cos'] = sentence_bert_cosine
@@ -91,10 +91,10 @@ def get_metrics(original_text: List[str] = None,
     metrics['k_dist'] = k_dist
     metrics['k_ent'] = k_ent
 
-#     stanza_metrics = stanza_metrics(sequences, adversarial_sequences)
-#     typer.echo(f"Counted_stanza_metrics")
-#     for metric, value in stanza_metrics.items():
-#         metrics[metric] = value
+    stanza_metrics_results = stanza_metrics(original_text, perturbed_text)
+    typer.echo(f"Counted_stanza_metrics")
+    for metric, value in stanza_metrics_results.items():
+        metrics[metric] = value
 
     return metrics
 
@@ -168,3 +168,4 @@ def main(
 
 if __name__ == "__main__":
     typer.run(main)
+
