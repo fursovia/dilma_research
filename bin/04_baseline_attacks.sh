@@ -42,10 +42,12 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
     
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
+            TARGET_PATH_OR_NAME=models/${dataset}/bert/
+
             PYTHONPATH=. python dilma/commands/evaluate.py \
                 ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
                 --save-to ${RESULTS_DIR}/${model}_${dataset}_${dataset}.json \
-                --target-clf-path models/${dataset}/bert/ \
+                --target-clf-path ${TARGET_PATH_OR_NAME} \
                 --output-from-textattack \
                 --num-labels ${num_labels}
         done

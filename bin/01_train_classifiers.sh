@@ -26,8 +26,8 @@ mkdir -p ./presets/textattack_models
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 
-    EXP_NAME=${DATE}-${dataset}-textattack_lstm
-    LOG_DIR=./logs/${EXP_NAME}
+    EXP_NAME=${dataset}-textattack_lstm
+    LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
     PYTHONPATH=. python dilma/commands/train_textattack.py \
         --model lstm \
@@ -41,6 +41,8 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
     cp ${LOG_DIR}/pytorch_model.bin ./presets/textattack_models/${dataset}/
     cp ${LOG_DIR}/load_lstm.py ./presets/textattack_models/${dataset}/
 done
+
+PYTHONPATH=. python scripts/parse_clf_metrics.py ./logs/${DATE} ./logs/${DATE}
 
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
