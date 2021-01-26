@@ -1292,6 +1292,24 @@ regex = "*"
 
 [[package]]
 category = "main"
+description = "Sentence Embeddings using BERT / RoBERTa / XLM-R"
+name = "sentence-transformers"
+optional = false
+python-versions = "*"
+version = "0.4.1.2"
+
+[package.dependencies]
+nltk = "*"
+numpy = "*"
+scikit-learn = "*"
+scipy = "*"
+sentencepiece = "*"
+torch = ">=1.6.0"
+tqdm = "*"
+transformers = ">=3.1.0,<5.0.0"
+
+[[package]]
+category = "main"
 description = "SentencePiece python wrapper"
 name = "sentencepiece"
 optional = false
@@ -1711,7 +1729,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "4d7799ecf676b63f7d2c3c5fc83a7eadc408e641bf6626bacb165fad96423662"
+content-hash = "79c0e819d99e362b84b2c058eac41e4680976d35706da12598df143a2ab34c15"
 python-versions = "^3.6.1"
 
 [metadata.files]
@@ -2587,6 +2605,9 @@ scipy = [
 ]
 segtok = [
     {file = "segtok-1.5.10.tar.gz", hash = "sha256:2ed6525e840a669ec7ba3be61353a4f660264aecfc726834dbe4b01eb4ef7804"},
+]
+sentence-transformers = [
+    {file = "sentence-transformers-0.4.1.2.tar.gz", hash = "sha256:750b0bb3deaa541865ae179434132108c43fc59498c6073a083aafca8a3ac710"},
 ]
 sentencepiece = [
     {file = "sentencepiece-0.1.94-cp35-cp35m-macosx_10_6_x86_64.whl", hash = "sha256:7b6c794d30272a5e635e958fdb4976dd991bf35eed90441104a042b2e51723c7"},
