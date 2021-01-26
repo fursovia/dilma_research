@@ -20,6 +20,8 @@ dataclasses_json = "^0.5.2"
 tabulate = "^0.8.7"
 textattack = "^0.2.11"
 datasets = "^1.2.1"
+bert-score = "^0.3.7"
+sentence-transformers = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.3.1"
