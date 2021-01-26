@@ -42,7 +42,7 @@ app = typer.Typer()
 
 
 @app.command()
-def main(data_dir: Path = None, temperature: float = 1.5, test_size: float = 0.05):
+def main(data_dir: Path = None, temperature: float = 1.5, test_size: float = 0.05, num_samples: int = 5):
     data_dir = data_dir or Path("./data")
     bert_model = BertLMHeadModel.from_pretrained('bert-base-uncased')
     bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
@@ -62,7 +62,9 @@ def main(data_dir: Path = None, temperature: float = 1.5, test_size: float = 0.0
 
     df = []
     for text in tqdm(dataset):
-        examples = sample_examples(text, bert_tokenizer, bert_model, device, temperature=temperature)
+        examples = sample_examples(
+            text, bert_tokenizer, bert_model, device, temperature=temperature, num_samples=num_samples
+        )
         examples = list(set(examples))
         for ex in examples:
             df.append({"text1": text, "text2": ex, "distance": calculate_wer(text, ex)})
