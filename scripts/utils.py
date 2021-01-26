@@ -39,7 +39,7 @@ def get_data_from_file(path: str) -> List[Dict[str, Any]]:
     with jsonlines.open(path, "r") as reader:
         for items in reader:
             data.append(items)
-    dataset = [(data['text'], int(data['label'])) for i in data]
+    dataset = [(i['text'], int(i['label'])) for i in data]
     return dataset
 
 

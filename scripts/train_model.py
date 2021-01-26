@@ -140,8 +140,12 @@ class OtherArguments:
         default=None,
     )
     use_early_stopping: bool = field(
-        metadata={"stop if val. loss increases during last n epochs"},
-        default=True,
+        metadata={"help": "stop if val. loss increases during last n epochs"},
+        default=False,
+    )
+    save_last: bool = field(
+        metadata={"help": "stop if val. loss increases during last n epochs"},
+        default=False,
     )
 
 
@@ -360,12 +364,12 @@ def main():
                 model_path=model_args.model_name_or_path if os.path.isdir(
                     model_args.model_name_or_path) else None,
             )
-
-#         trainer.save_model()
-#         torch.save(
-#             trainer.optimizer.state_dict(),
-#             os.path.join(training_args.output_dir,f"optimizer.pt")
-#         )
+        if other_args.save_last:
+            trainer.save_model()
+#             torch.save(
+#                 trainer.optimizer.state_dict(),
+#                 os.path.join(training_args.output_dir,f"optimizer.pt")
+#             )
 
     if training_args.do_eval:
         eval_result = trainer.evaluate(eval_dataset=validation_dataset)
