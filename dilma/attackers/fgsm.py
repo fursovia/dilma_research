@@ -1,19 +1,16 @@
 """Explaining and Harnessing Adversarial Examples.
 Generating Natural Language Adversarial Examples on a Large Scale with Generative Models"""
 
-from pathlib import Path
-from typing import Optional
+from typing import Union
 from copy import deepcopy
-from functools import lru_cache
 import random
 
 import torch
-from allennlp.models import load_archive
-from allennlp.data import TextFieldTensors, Batch, DatasetReader
-from allennlp.nn.util import move_to_device
 from allennlp.nn import util
 
 from dilma.attackers.attacker import Attacker, AttackerOutput
+from dilma.constants import ClassificationData, PairClassificationData
+from dilma.utils.data import decode_indexes
 
 
 class FGSMAttacker(Attacker):
@@ -24,95 +21,79 @@ class FGSMAttacker(Attacker):
         self.num_steps = num_steps
         self.epsilon = epsilon
 
-        self.emb_layer = self._construct_embedding_matrix()
+        self.emb_layer = util.find_embedding_layer(self.classifier).weight
         self.vocab_size = self.vocab.get_vocab_size()
 
-    def _construct_embedding_matrix(self):
-        embedding_layer = util.find_embedding_layer(self.classifier)
-        self.embedding_layer = embedding_layer
-        return embedding_layer.weight
+    def attack(self, data_to_attack: Union[ClassificationData, PairClassificationData]) -> AttackerOutput:
+        # get inputs to the model
+        inputs = self.text_to_textfield_tensors(text=data_to_attack.text)
 
-    def indexes_to_string(self, indexes: torch.Tensor) -> str:
-        out = [self.classifier.vocab.get_token_from_index(idx.item()) for idx in indexes]
-        out = [o for o in out if o not in ["<START>", "<END>"]]
-        return " ".join(out)
+        adversarial_idexes = inputs["tokens"]["tokens"]["tokens"][0]
 
-    @lru_cache(maxsize=1000)
-    def sequence_to_input(self, sequence: str) -> TextFieldTensors:
-        instances = Batch([
-            self.reader.text_to_instance(sequence)
-        ])
+        # original probability of the true label
+        orig_prob = self.get_probs_from_textfield_tensors(inputs)[self.label_to_index(data_to_attack.label)].item()
 
-        instances.index_instances(self.classifier.vocab)
-        inputs = instances.as_tensor_dict()["tokens"]
-        return move_to_device(inputs, self.device)
+        # get mask and embeddings
+        emb_out = self.classifier.get_embeddings(inputs["tokens"])
 
-    def attack(
-            self,
-            sequence_to_attack: str,
-            label_to_attack: int = 1,
-            num_steps: Optional[int] = None,
-            epsilon: Optional[float] = None
-    ) -> AttackerOutput:
-        seq_length = len(sequence_to_attack.split())
-        num_steps = num_steps or self.num_steps
-        epsilon = epsilon or self.epsilon
-        inputs = self.sequence_to_input(sequence_to_attack)
+        # disable gradients using a trick
+        embeddings = emb_out["embedded_text"].detach()
+        embeddings_splitted = [e for e in embeddings[0]]
 
-        # trick to make the variable a leaf variable
-        emb_inp = self.classifier.get_embeddings(inputs)
-        embs = emb_inp['embedded_text'].detach()
-        label = torch.tensor([label_to_attack], device=embs.device)
+        outputs = []
+        for step in range(self.num_steps):
+            # choose random index of embeddings (except for start/end tokens)
+            random_idx = random.randint(1, max(1, len(data_to_attack.text) - 2))
+            # only one embedding can be modified
+            embeddings_splitted[random_idx].requires_grad = True
 
-        initial_prob = self.classifier.forward_on_embeddings(
-            embs,
-            emb_inp["mask"],
-            label=label
-        )["probs"][0, label_to_attack].item()
-        embs = [e for e in embs[0]]
-
-        history = []
-        for i in range(num_steps):
-            random_idx = random.randint(1, max(1, seq_length - 2))
-            embs[random_idx].requires_grad = True
-            embeddings_tensor = torch.stack(embs, dim=0).unsqueeze(0)
-
-            clf_output = self.classifier.forward_on_embeddings(
-                embeddings_tensor,
-                emb_inp["mask"],
-                label=label
-            )
-
-            loss = clf_output["loss"]
-            self.classifier.zero_grad()
+            # calculate the loss for current embeddings
+            loss = self.classifier.forward_on_embeddings(
+                embeddings=torch.stack(embeddings_splitted, dim=0).unsqueeze(0),
+                mask=emb_out["mask"],
+                label=inputs["label"],
+            )["loss"]
             loss.backward()
 
-            embs[random_idx] = embs[random_idx] + epsilon * embs[random_idx].grad.data.sign()
-
-            distances = torch.nn.functional.pairwise_distance(
-                embs[random_idx],
-                self.emb_layer
+            # update the chosen embedding
+            embeddings_splitted[random_idx] = (
+                    embeddings_splitted[random_idx] + self.epsilon * embeddings_splitted[random_idx].grad.data.sign()
             )
-            # @UNK@, @PAD@, @MASK@, @START@, @END@
-            to_drop_indexes = [0, 1] + list(range(self.vocab_size - 3, self.vocab_size))
-            distances[to_drop_indexes] = 10e6
+            self.classifier.zero_grad()
 
+            # find the closest embedding for the modified one
+            distances = torch.nn.functional.pairwise_distance(embeddings_splitted[random_idx], self.emb_layer)
+            # we dont choose special tokens
+            distances[self.special_indexes] = 10 ** 16
+
+            # swap embeddings
             closest_idx = distances.argmin().item()
-            embs[random_idx] = self.emb_layer[closest_idx]
-            embs = [e.detach() for e in embs]
+            embeddings_splitted[random_idx] = self.emb_layer[closest_idx]
+            embeddings_splitted = [e.detach() for e in embeddings_splitted]
 
-            adversarial_idexes = inputs["tokens"]["tokens"].clone()
-            adversarial_idexes[0, random_idx] = closest_idx
+            # get adversarial indexes
+            adversarial_idexes[random_idx] = closest_idx
 
-            adverarial_seq = self.indexes_to_string(adversarial_idexes[0])
-            new_clf_output = self.classifier.forward(self.sequence_to_input(adverarial_seq))
-            new_probs = new_clf_output["probs"]
-            adv_prob = new_probs[0, label_to_attack].item()
+            adv_data = deepcopy(data_to_attack)
+            adv_data.text = decode_indexes(adversarial_idexes, vocab=self.vocab)
 
-            output = AttackerOutput()
+            adv_inputs = self.text_to_textfield_tensors(adv_data.text)
 
-            history.append(output)
+            # get adversarial probability and adversarial label
+            adv_probs = self.get_probs_from_textfield_tensors(adv_inputs)
+            adv_data.label = self.probs_to_label(adv_probs)
+            adv_prob = adv_probs[self.label_to_index(data_to_attack.label)].item()
 
-        output = self.find_best_attack(history)
-        output.history = [deepcopy(o.__dict__) for o in history]
-        return output
+            output = AttackerOutput(
+                data=ClassificationData(text=data_to_attack.text, label=str(data_to_attack.label)),
+                adversarial_data=ClassificationData(text=adv_data.text, label=str(adv_data.label)),
+                probability=orig_prob,
+                adversarial_probability=adv_prob,
+            )
+
+            outputs.append(output)
+
+        best_output = self.find_best_attack(outputs)
+        best_output.history = [output.to_dict() for output in outputs]
+
+        return best_output
