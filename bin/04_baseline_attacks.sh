@@ -6,14 +6,18 @@
 RESULTS_DIR='results'
 NUM_EXAMPLES=1000
 
+if [ ! -d ${RESULTS_DIR} ]; then
+  mkdir -p ${RESULTS_DIR};
+fi
+
 for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
             textattack attack \
                 --recipe ${attacker} \
                 --model-from-file models/${dataset}/lstm/load_lstm.py \
-                --dataset-from-file data/${dataset}/load_valid.py \
-                --num-examples ${NUM_EXAMPLES} \
+                --dataset-from-file data/${dataset}/load_test.py \
+             ''   --num-examples ${NUM_EXAMPLES} \
                 --log-to-csv ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
                 --disable-stdout
         done
@@ -27,13 +31,23 @@ done
 # 4. save table with metrics to ./results folder
 
 for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
+    
+    if [ $dataset == "dstc" ]; then
+    num_labels=46
+    elif [ $dataset == "ag_news" ]; then
+    num_labels=4
+    else
+    num_labels=2
+    fi
+    
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
             PYTHONPATH=. python dilma/commands/evaluate.py \
                 ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
-                --save-to results/${dataset}_bert.json \
-                --target-clf-path ${dataset} \
-                --output-from-textattack
+                --save-to ${RESULTS_DIR}/${model}_${dataset}_${dataset}.json \
+                --target-clf-path models/${dataset}/bert/ \
+                --output-from-textattack \
+                --num-labels ${num_labels}
         done
     done
 done
@@ -41,6 +55,10 @@ done
 # 5*. attack M examples of the train (!) set (will be needed for adversarial training and detection)
 ADV_TRAIN_DIR='adv_training_data'
 NUM_EXAMPLES_TRAIN=10000
+
+if [ ! -d ${NUM_EXAMPLES_TRAIN} ]; then
+  mkdir -p ${NUM_EXAMPLES_TRAIN};
+fi
 
 for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
     for model in "lstm"; do
