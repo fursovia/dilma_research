@@ -31,7 +31,9 @@ def sample_examples(text, bert_tokenizer, bert_model, device, temperature=2.0, n
     texts = []
     for idx in indexes:
         aug_text = bert_tokenizer.decode(idx.cpu().numpy().tolist()[1:-1])
-        texts.append(clean_text(aug_text))
+        aug_text = clean_text(aug_text)
+        if aug_text:
+            texts.append(aug_text)
 
     return texts
 
@@ -56,12 +58,15 @@ def main(data_dir: Path = None):
             texts = [d['text'] for d in data]
             dataset.extend(texts)
 
+    dataset = list(set(dataset))
+
     df = []
     for text in tqdm(dataset):
         examples = sample_examples(text, bert_tokenizer, bert_model, device, temperature=1.5)
         examples = list(set(examples))
         for ex in examples:
             df.append({"text1": text, "text2": ex, "distance": calculate_wer(text, ex)})
+        df.append({"text1": text, "text2": text, "distance": 0})
 
     train, valid = train_test_split(df, test_size=0.05)
     write_jsonlines(train, data_dir / "deeplev/train.json")
