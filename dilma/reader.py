@@ -58,8 +58,8 @@ class DeepLevenshteinReader(DatasetReader):
                 if not line:
                     continue
                 items = json.loads(line)
-                seq_a = items["text_a"]
-                seq_b = items["text_b"]
+                seq_a = items["text1"]
+                seq_b = items["text2"]
                 dist = items.get("distance")
                 instance = self.text_to_instance(sequence_a=seq_a, sequence_b=seq_b, distance=dist)
                 yield instance
