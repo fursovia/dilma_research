@@ -42,7 +42,7 @@ app = typer.Typer()
 
 
 @app.command()
-def main(data_dir: Path = None):
+def main(data_dir: Path = None, temperature: float = 1.5, test_size: float = 0.05):
     data_dir = data_dir or Path("./data")
     bert_model = BertLMHeadModel.from_pretrained('bert-base-uncased')
     bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
@@ -62,15 +62,17 @@ def main(data_dir: Path = None):
 
     df = []
     for text in tqdm(dataset):
-        examples = sample_examples(text, bert_tokenizer, bert_model, device, temperature=1.5)
+        examples = sample_examples(text, bert_tokenizer, bert_model, device, temperature=temperature)
         examples = list(set(examples))
         for ex in examples:
             df.append({"text1": text, "text2": ex, "distance": calculate_wer(text, ex)})
         df.append({"text1": text, "text2": text, "distance": 0})
 
-    train, valid = train_test_split(df, test_size=0.05)
-    write_jsonlines(train, data_dir / "deeplev/train.json")
-    write_jsonlines(valid, data_dir / "deeplev/valid.json")
+    train, valid = train_test_split(df, test_size=test_size)
+    output_dir = data_dir / "deeplev"
+    output_dir.mkdir(exist_ok=True, parents=True)
+    write_jsonlines(train, output_dir / "train.json")
+    write_jsonlines(valid, output_dir / "valid.json")
 
 
 if __name__ == "__main__":
