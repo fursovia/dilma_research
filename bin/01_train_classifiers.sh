@@ -48,3 +48,24 @@ done
 
 # 2) TRAIN TARGET CLASSIFIER (THE ONES TEXTATTACK DOESNT HAVE)
 
+for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
+    PYTHONPATH=. python scripts/train_model.py \
+        --model_name_or_path 'roberta-base' \
+        --config_name 'roberta-base' \
+        --tokenizer_name 'roberta-base' \
+        --task_name ${dataset} \
+        --do_train \
+        --do_eval \
+        --logging_steps 100 \
+        --per_device_train_batch_size 64 \
+        --per_device_eval_batch_size 64 \
+        --learning_rate 2e-5 \
+        --num_train_epochs 5 \
+        --save_steps -1 \
+        --evaluation_strategy "epoch" \
+        --save_total_limit 0 \
+        --evaluate_during_training \
+        --output_dir models/${dataset}/bert/ \
+        --use_custom_trainer \
+        --use_early_stopping
+done
