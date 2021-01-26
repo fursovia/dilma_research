@@ -15,9 +15,9 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
             textattack attack \
                 --recipe ${attacker} \
-                --model-from-file models/${dataset}/lstm/load_lstm.py \
+                --model-from-file ./presets/textattack_models/${dataset}/load_lstm.py \
                 --dataset-from-file data/${dataset}/load_test.py \
-             ''   --num-examples ${NUM_EXAMPLES} \
+                --num-examples ${NUM_EXAMPLES} \
                 --log-to-csv ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
                 --disable-stdout
         done

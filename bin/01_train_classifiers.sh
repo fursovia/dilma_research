@@ -20,14 +20,26 @@ CONFIG_NAME="${CONFIG_NAME%.*}"
 #now don't work with qqp
 # 1) TRAIN SUBSTITUTE CLASSIFIERS
 # TODO: early stopping?
+
+mkdir -p ./presets/textattack_models
+
+
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
+
+    EXP_NAME=${DATE}-${dataset}-textattack_lstm
+    LOG_DIR=./logs/${EXP_NAME}
+
     PYTHONPATH=. python dilma/commands/train_textattack.py \
         --model lstm \
-        --output-dir models/${dataset}/lstm \
+        --output-dir ${LOG_DIR} \
         --dataset-folder data/${dataset}/ \
         --epochs 50 \
         --batch-size 128 \
         --learning-rate 5e-4
+
+    mkdir -p ./presets/textattack_models/${dataset}
+    cp ${LOG_DIR}/pytorch_model.bin ./presets/textattack_models/${dataset}/
+    cp ${LOG_DIR}/load_lstm.py ./presets/textattack_models/${dataset}/
 done
 
 

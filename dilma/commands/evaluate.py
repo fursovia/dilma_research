@@ -150,6 +150,10 @@ def main(
             model, original_dataloader, device)
         y_adv, adversarial_probability = run_validation(
             model, perturbed_dataloader, device)
+    else:
+        y_pred = None
+        probability = None  # np.zeros() if textattack
+        adversarial_probability = None
 
     metrics = get_metrics(
         original_text,

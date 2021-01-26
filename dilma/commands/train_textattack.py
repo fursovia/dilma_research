@@ -208,11 +208,13 @@ def batch_encode(tokenizer, text_list):
 def get_load_model_file(output_dir: str,
                     number_of_labels: int
                     ) -> str:
+
+    dataset = output_dir.split('/')[-2]
     text = ["import textattack",
             "from textattack.shared import utils",
             "import torch",
             f"model = textattack.models.helpers.LSTMForClassification(max_seq_length=128,num_labels={number_of_labels})",
-            f"model.load_state_dict(torch.load('{output_dir}/pytorch_model.bin', map_location=utils.device))",
+            f"model.load_state_dict(torch.load('./presets/textattack_models/{dataset}/pytorch_model.bin', map_location=utils.device))",
             "model.eval()",
             "model = textattack.models.wrappers.PyTorchModelWrapper(model, model.tokenizer)"
             ]
