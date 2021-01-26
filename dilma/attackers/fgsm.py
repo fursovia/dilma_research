@@ -13,27 +13,19 @@ from allennlp.data import TextFieldTensors, Batch, DatasetReader
 from allennlp.nn.util import move_to_device
 from allennlp.nn import util
 
-from dilma.attackers import Attacker
+from dilma.attackers.attacker import Attacker, AttackerOutput
 
 
 class FGSMAttacker(Attacker):
 
-    def __init__(self, classifier_dir: str, num_steps: int = 10, epsilon: float = 0.01, device: int = -1):
-
-        archive = load_archive(Path(classifier_dir) / "model.tar.gz")
-        self.reader = DatasetReader.from_params(archive.config["dataset_reader"])
-        self.classifier = archive.model
-        self.classifier.eval()
+    def __init__(self, archive_path: str, num_steps: int = 10, epsilon: float = 0.01, device: int = -1):
+        super().__init__(archive_path, device)
 
         self.num_steps = num_steps
         self.epsilon = epsilon
-        self.device = device
-
-        if self.device >= 0 and torch.cuda.is_available():
-            self.classifier.cuda(self.device)
 
         self.emb_layer = self._construct_embedding_matrix()
-        self.vocab_size = self.classifier.vocab.get_vocab_size()
+        self.vocab_size = self.vocab.get_vocab_size()
 
     def _construct_embedding_matrix(self):
         embedding_layer = util.find_embedding_layer(self.classifier)
@@ -117,16 +109,7 @@ class FGSMAttacker(Attacker):
             new_probs = new_clf_output["probs"]
             adv_prob = new_probs[0, label_to_attack].item()
 
-            output = AttackerOutput(
-                sequence=sequence_to_attack,
-                probability=initial_prob,
-                adversarial_sequence=adverarial_seq,
-                adversarial_probability=adv_prob,
-                wer=calculate_wer(sequence_to_attack, adverarial_seq),
-                prob_diff=(initial_prob - adv_prob),
-                attacked_label=label_to_attack,
-                adversarial_label=new_probs.argmax().item()
-            )
+            output = AttackerOutput()
 
             history.append(output)
 
