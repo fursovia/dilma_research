@@ -42,13 +42,11 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
     cp ${LOG_DIR}/load_lstm.py ./presets/textattack_models/${dataset}/
 done
 
-PYTHONPATH=. python scripts/parse_clf_metrics.py ./logs/${DATE} ./logs/${DATE}
-
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 
-    EXP_NAME=${DATE}-${dataset}-${CONFIG_NAME}
-    LOG_DIR=./logs/${EXP_NAME}
+    EXP_NAME=-${dataset}-${CONFIG_NAME}
+    LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
     TRAIN_DATA_PATH=./data/${dataset}/substitute_train.json \
       VALID_DATA_PATH=./data/${dataset}/valid.json \
@@ -63,6 +61,9 @@ done
 # 2) TRAIN TARGET CLASSIFIER (THE ONES TEXTATTACK DOESNT HAVE)
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
+    EXP_NAME=${dataset}-roberta
+    LOG_DIR=./logs/${DATE}/${EXP_NAME}
+
     PYTHONPATH=. python scripts/train_model.py \
         --model_name_or_path 'roberta-base' \
         --config_name 'roberta-base' \
@@ -79,7 +80,12 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
         --evaluation_strategy "epoch" \
         --save_total_limit 0 \
         --evaluate_during_training \
-        --output_dir models/${dataset}/bert/ \
+        --output_dir ${LOG_DIR} \
         --use_custom_trainer \
         --use_early_stopping
+
+    mkdir -p ./presets/transformer_models/${dataset}
+    cp -r ${LOG_DIR}/* ./presets/transformer_models/${dataset}/
 done
+
+PYTHONPATH=. python scripts/parse_clf_metrics.py ./logs/${DATE} ./logs/${DATE}
