@@ -35,6 +35,10 @@ from utils import (random_seed,
 ARGS_SPLIT_TOKEN = "^"
 
 
+texts = ["asd", 'qwe', '12412', 'qweqew']
+adv_texts = ["aaa", 'qwwe', '12312', 'qweqwe']  # some of them are unsuccessful
+
+
 @dataclass
 class DataTrainingArguments:
     """
@@ -248,9 +252,10 @@ def main():
                     for i in train_dataset.data.column_names}
             )
         )
+        random.seed(123)
         train_dataset = train_dataset.select(
             random.sample(
-                list(np.arange(len(train_dataset))),
+                list(range(len(train_dataset))),
                 other_args.adversarial_training_original_data_amount
             )
         )

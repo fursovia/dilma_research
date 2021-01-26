@@ -8,6 +8,8 @@ app = typer.Typer()
 
 @app.command()
 def main(logdir: Path, output_path: Path):
+
+    # textattack
     metrics = {}
     for dirname in logdir.iterdir():
         with open(dirname / "lstm/log.txt") as f:
@@ -19,6 +21,12 @@ def main(logdir: Path, output_path: Path):
 
     with open(output_path / "textattack_metrics.json", 'w') as f:
         json.dump(metrics, f, indent=4)
+
+    # allennlp
+    ## do something
+
+    # transformers
+    ## do something
 
 
 if __name__ == "__main__":

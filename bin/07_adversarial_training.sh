@@ -34,10 +34,11 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
 
         for num_examples in 200 500 1000 2000 3000 4000 5000; do
             echo "Train ${attacker} start; num_examples ${num_examples}" >> ${logger_name}.txt
+
             python scripts/train_model.py \
-                --model_name_or_path datasets/${dataset}/model/ \
-                --config_name datasets/${dataset}/model/ \
-                --tokenizer_name datasets/${dataset}/model/ \
+                --model_name_or_path models/${dataset}/model/ \
+                --config_name models/${dataset}/model/ \
+                --tokenizer_name models/${dataset}/model/ \
                 --task_name ${dataset} \
                 --do_train \
                 --do_eval \
@@ -51,12 +52,34 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
                 --save_total_limit 0 \
                 --evaluate_during_training \
                 --output_dir models/${dataset}/adv_trained_model/ \
-                --adversarial_data_path ${ADV_TRAIN_DIR}/lstm_${dataset}_${attacker}.csv
+                --adversarial_data_path ${ADV_TRAIN_DIR}/lstm_${dataset}_${attacker}.csv \
                 --adversarial_training_original_data_amount ${num_examples} \
                 --adversarial_training_perturbed_data_amount ${num_examples} \
                 --use_custom_trainer \
                 --save_last
 
+            python scripts/train_model.py \
+                --model_name_or_path 'roberta-base' \
+                --config_name 'roberta-base' \
+                --tokenizer_name 'roberta-base' \
+                --task_name ${dataset} \
+                --do_train \
+                --do_eval \
+                --logging_steps ${logging_steps} \
+                --per_device_train_batch_size ${batch_size} \
+                --per_device_eval_batch_size ${batch_size} \
+                --learning_rate 2e-5 \
+                --num_train_epochs 25 \
+                --save_steps -1 \
+                --evaluation_strategy "epoch" \
+                --save_total_limit 0 \
+                --evaluate_during_training \
+                --output_dir models/${dataset}/adv_trained_model/ \
+                --adversarial_data_path ${ADV_TRAIN_DIR}/lstm_${dataset}_${attacker}.csv \
+                --adversarial_training_original_data_amount -1 \
+                --adversarial_training_perturbed_data_amount ${num_examples} \
+                --use_custom_trainer \
+                --save_last
 
             echo "Train ${attacker} end num_examples ${num_examples}" >> ${logger_name}.txt
             echo "Test ${attacker} start " >> ${logger_name}.txt

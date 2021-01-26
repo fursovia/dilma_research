@@ -58,8 +58,8 @@ done
 ADV_TRAIN_DIR='adv_training_data'
 NUM_EXAMPLES_TRAIN=10000
 
-if [ ! -d ${NUM_EXAMPLES_TRAIN} ]; then
-  mkdir -p ${NUM_EXAMPLES_TRAIN};
+if [ ! -d ${ADV_TRAIN_DIR} ]; then
+  mkdir -p ${ADV_TRAIN_DIR};
 fi
 
 for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
@@ -67,7 +67,7 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
             textattack attack \
                 --recipe ${attacker} \
-                --model-from-file models/${dataset}/lstm/load_lstm.py \
+                --model-from-file ./presets/textattack_models/${dataset}/load_lstm.py \
                 --dataset-from-file data/${dataset}/load_substitute_train.py \
                 --num-examples ${NUM_EXAMPLES_TRAIN} \
                 --log-to-csv ${ADV_TRAIN_DIR}/${model}_${dataset}_${attacker}.csv \
