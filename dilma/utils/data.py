@@ -8,7 +8,7 @@ from allennlp.data.vocabulary import Vocabulary
 
 def clean_text(text: str) -> str:
     text = text.lower()
-    text = re.sub(r"[^\w0-9 ]+", "", text)
+    # text = re.sub(r"[^\w0-9 ]+", "", text)
     text = re.sub(r"\s\s+", " ", text).strip()
     return text
 

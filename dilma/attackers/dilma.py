@@ -97,8 +97,7 @@ class DILMA(Attacker):
 
         if self.num_samples is None:
             indexes = self.truncate_start_end_tokens(lm_probs.argmax(dim=2))
-            adv_text = self.bert_tokenizer.decode(indexes.cpu().numpy()[0].tolist())
-            # adv_text = clean_text(self.bert_tokenizer.decode(indexes.cpu().numpy()[0].tolist()))
+            adv_text = clean_text(self.bert_tokenizer.decode(indexes.cpu().numpy()[0].tolist()))
         else:
             raise NotImplementedError
 
