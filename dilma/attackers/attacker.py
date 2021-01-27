@@ -113,7 +113,7 @@ class Attacker(ABC, Registrable):
     @staticmethod
     def find_best_attack(outputs: List[AttackerOutput]) -> AttackerOutput:
         # drop zero-length examples
-        outputs = list(filter(lambda x: len(x.text) > 0, outputs))
+        outputs = list(filter(lambda x: len(x.data.text) > 0, outputs))
         if len(outputs) == 1:
             return outputs[0]
 
