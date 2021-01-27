@@ -62,7 +62,7 @@ class BasicClassifierOneHotSupport(BasicClassifier):
         return {"embedded_text": embedded_text, "mask": mask, "token_ids": token_ids}
 
     def forward(  # type: ignore
-        self, tokens: Union[TextFieldTensors, OneHot], label: torch.IntTensor = None
+        self, tokens: Union[TextFieldTensors, OneHot], label: torch.IntTensor = None, **kwargs
     ) -> Dict[str, torch.Tensor]:
 
         emb_out = self.get_embeddings(tokens)
