@@ -11,7 +11,7 @@ local clf_path = std.extVar("CLF_PATH");
     "lr": 0.001,
     "num_gumbel_samples": 1,
     "tau": 1.0,
-    "num_samples": null,
+    "num_samples": 10,
     "temperature": 1.0,
     "add_mask": false,
     "device": 0

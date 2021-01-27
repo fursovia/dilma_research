@@ -1,9 +1,10 @@
-from typing import Union, Optional, Dict
+from typing import Union, Optional, Dict, List
 from copy import deepcopy
 
 from transformers import AutoTokenizer, BertLMHeadModel
 from allennlp.models import load_archive
 import torch
+from torch.distributions import Categorical
 from torch.nn.functional import gumbel_softmax
 
 from dilma.constants import ClassificationData, PairClassificationData, MASK_TOKEN
@@ -90,18 +91,25 @@ class DILMA(Attacker):
             parameter.grad = None
 
     @torch.no_grad()
-    def sample_from_language_model(self, lm_model: BertLMHeadModel, inputs: Dict[str, torch.Tensor]) -> str:
+    def sample_from_language_model(self, lm_model: BertLMHeadModel, inputs: Dict[str, torch.Tensor]) -> List[str]:
         bert_out = lm_model(**inputs, return_dict=True)
-        lm_probs = torch.softmax(bert_out.logits, dim=-1)
+        logits = bert_out.logits / self.temperature
+        lm_probs = torch.softmax(logits, dim=-1)
         lm_probs[:, :, self.special_indexes] = 0.0
 
+        adv_texts = []
         if self.num_samples is None:
             indexes = self.truncate_start_end_tokens(lm_probs.argmax(dim=2))
-            adv_text = clean_text(self.bert_tokenizer.decode(indexes.cpu().numpy()[0].tolist()))
         else:
-            raise NotImplementedError
+            indexes = Categorical(probs=lm_probs[0]).sample((self.num_samples,))
 
-        return adv_text
+        for idx in indexes:
+            # skip CLS and SEP tokens
+            indexes_to_decode = idx.cpu().numpy().tolist()[1:-1]
+            adv_text = clean_text(self.bert_tokenizer.decode(indexes_to_decode))
+            adv_texts.append(adv_text)
+
+        return adv_texts
 
     def attack(self, data_to_attack: Union[ClassificationData, PairClassificationData]) -> AttackerOutput:
 
@@ -148,20 +156,21 @@ class DILMA(Attacker):
             loss.backward()
             self.update_weights(bert)
 
-            adv_text = self.sample_from_language_model(bert, inputs)
+            adv_texts = self.sample_from_language_model(bert, inputs)
 
-            with torch.no_grad():
-                clf_probs = self.get_probs_from_string(adv_text)
-                adv_label = self.probs_to_label(clf_probs)
-                adv_prob = clf_probs[0, label_to_attack_idx]
+            for adv_text in adv_texts:
+                with torch.no_grad():
+                    clf_probs = self.get_probs_from_string(adv_text)
+                    adv_label = self.probs_to_label(clf_probs)
+                    adv_prob = clf_probs[0, label_to_attack_idx]
 
-            output = AttackerOutput(
-                data=ClassificationData(text=text, label=str(label_to_attack)),
-                adversarial_data=ClassificationData(text=adv_text, label=str(adv_label)),
-                probability=initial_prob.item(),
-                adversarial_probability=adv_prob.item(),
-            )
-            outputs.append(output)
+                output = AttackerOutput(
+                    data=ClassificationData(text=text, label=str(label_to_attack)),
+                    adversarial_data=ClassificationData(text=adv_text, label=str(adv_label)),
+                    probability=initial_prob.item(),
+                    adversarial_probability=adv_prob.item(),
+                )
+                outputs.append(output)
 
         best_output = self.find_best_attack(outputs)
         best_output.history = [deepcopy(out.to_dict()) for out in outputs]

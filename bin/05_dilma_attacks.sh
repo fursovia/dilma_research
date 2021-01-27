@@ -18,7 +18,7 @@ RESULTS_DIR="./results"
 DATE=$(date +%H%M%S-%d%m)
 
 
-for dataset_name in "sst2" "ag_news" "rotten_tomatoes"; do
+for dataset_name in "sst2" "ag_news" "rotten_tomatoes" "dstc"; do
     data_path=${DATA_DIR}/${dataset_name}/test.json
 
     for config_path in ${CONFIG_DIR}/*.jsonnet; do
