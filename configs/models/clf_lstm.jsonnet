@@ -8,13 +8,13 @@ local transformer_model = "bert-base-uncased";
       "model_name": transformer_model,
       "add_special_tokens": true
     },
-    "token_indexers": {
-      "tokens": {
-        "type": "pretrained_transformer",
-        "model_name": transformer_model,
-        "max_length": 512
-      }
-    },
+//    "token_indexers": {
+//      "tokens": {
+//        "type": "pretrained_transformer",
+//        "model_name": transformer_model,
+//        "max_length": 512
+//      }
+//    },
     "lazy": false
   },
   "train_data_path": std.extVar("TRAIN_DATA_PATH"),
