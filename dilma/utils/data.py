@@ -34,7 +34,9 @@ def write_jsonlines(data: Sequence[Dict[str, Any]], path: str) -> None:
 
 
 def clear_texts(list_of_texts: List[str]) -> List[str]:
-    return [re.sub(r"(\[\[)|(\]\])", "", i) for i in list_of_texts]
+    return [re.sub(r"(\[\[)|(\]\])", "", i).replace("Question1: ","").replace(">>>>Question2: "," ") for i in list_of_texts]
+
+
 
 
 def decode_indexes(
