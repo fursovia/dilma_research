@@ -203,7 +203,7 @@ def main():
 
     else:  # load dataset from file
         train_data = get_data_from_file(
-            f"datasets/{data_args.task_name}/data/train.json")
+            f"data/{data_args.task_name}/data/train.json")
         num_labels = len(set([i[1] for i in train_data]))
         train_encodings = tokenizer([i[0] for i in train_data],
                                     truncation=True,
@@ -219,7 +219,7 @@ def main():
                 'label'])
 
         val_data = get_data_from_file(
-            f"datasets/{data_args.task_name}/data/valid.json")
+            f"data/{data_args.task_name}/data/valid.json")
         val_encodings = tokenizer([i[0] for i in val_data],
                                   truncation=True,
                                   padding='max_length',
