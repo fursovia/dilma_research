@@ -13,7 +13,7 @@ local clf_path = std.extVar("CLF_PATH");
     "tau": 1.0,
     "num_samples": null,
     "temperature": 1.0,
-    "add_mask": true,
+    "add_mask": false,
     "device": 0
   }
 }
