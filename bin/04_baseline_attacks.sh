@@ -17,10 +17,10 @@ for dataset in "qqp" "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
             if [ $dataset == "qqp" ]; then
             textattack attack \
                 --recipe ${attacker} \
-                --model-from-file ./presets/textattack_models/${dataset}/load_lstm.py \
+                --model-from-file ./presets/transformer_substitute_models/${dataset}/load_model.py
                 --dataset-from-file data/${dataset}/load_test.py \
                 --num-examples ${NUM_EXAMPLES} \
-                --log-to-csv ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
+                --log-to-csv ${RESULTS_DIR}/roberta_${dataset}_${attacker}.csv \
                 --disable-stdout
             
             else
@@ -77,6 +77,17 @@ fi
 for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
+            if [ $dataset == "qqp" ]; then
+            textattack attack \
+                --recipe ${attacker} \
+                --model-from-file ./presets/transformer_substitute_models/${dataset}/load_model.py
+                --dataset-from-file data/${dataset}/load_substitute_train.py \
+                --num-examples ${NUM_EXAMPLES} \
+                --log-to-csv ${RESULTS_DIR}/roberta_${dataset}_${attacker}.csv \
+                --disable-stdout
+            
+            else
+            
             textattack attack \
                 --recipe ${attacker} \
                 --model-from-file ./presets/textattack_models/${dataset}/load_lstm.py \

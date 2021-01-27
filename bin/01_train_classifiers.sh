@@ -45,7 +45,7 @@ done
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 
-    EXP_NAME=${dataset}-${CONFIG_NAME}
+    EXP_NAME=-${dataset}-${CONFIG_NAME}
     LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
     TRAIN_DATA_PATH=./data/${dataset}/substitute_train.json \
@@ -55,6 +55,36 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
       --include-package dilma
 
     cp ${LOG_DIR}/model.tar.gz ./presets/${dataset}.tar.gz
+done
+
+
+for dataset in "qqp"; do
+    EXP_NAME=${dataset}-substitute-roberta
+    LOG_DIR=./logs/${DATE}/${EXP_NAME}
+
+    PYTHONPATH=. python scripts/train_model.py \
+        --model_name_or_path 'roberta-base' \
+        --config_name 'roberta-base' \
+        --tokenizer_name 'roberta-base' \
+        --task_name ${dataset} \
+        --do_train \
+        --do_eval \
+        --logging_steps 100 \
+        --per_device_train_batch_size 64 \
+        --per_device_eval_batch_size 64 \
+        --learning_rate 2e-5 \
+        --num_train_epochs 5 \
+        --save_steps -1 \
+        --evaluation_strategy "epoch" \
+        --save_total_limit 0 \
+        --evaluate_during_training \
+        --output_dir ${LOG_DIR} \
+        --use_custom_trainer \
+        --use_early_stopping \
+        --substitute_train
+
+    mkdir -p ./presets/transformer_substitute_models/${dataset}
+    cp -r ${LOG_DIR}/* ./presets/transformer_substitute_models/${dataset}/
 done
 
 
