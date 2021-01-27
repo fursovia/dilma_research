@@ -45,7 +45,7 @@ done
 
 for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 
-    EXP_NAME=-${dataset}-${CONFIG_NAME}
+    EXP_NAME=${dataset}-${CONFIG_NAME}
     LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
     TRAIN_DATA_PATH=./data/${dataset}/substitute_train.json \
