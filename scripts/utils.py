@@ -27,19 +27,15 @@ def random_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
 
-# def get_data_from_file(path: str) -> List[Any]:
-#     text_file = open(path, "r")
-#     raw_lines = text_file.readlines()
-#     dataset = [(' '.join(i.split()[1:]), int(i.split()[0])) for i in raw_lines]
-#     return dataset
-
-
 def get_data_from_file(path: str) -> List[Dict[str, Any]]:
     data = []
     with jsonlines.open(path, "r") as reader:
         for items in reader:
             data.append(items)
-    dataset = [(i['text'], int(i['label'])) for i in data]
+    if 'qqp' not in path:
+        dataset = [(i['text'], int(i['label'])) for i in data]
+    else:
+        dataset = [( i['question1'] + '</s></s>' + i['question2'], int(i['label'])) for i in data]
     return dataset
 
 
@@ -49,8 +45,8 @@ def get_adv_data(path: str) -> List[Any]:
     labels = [int(i) for i in df['ground_truth_output'].tolist()]
     texts = [re.sub(r"(\[\[)|(\]\])", "", i)
              for i in df['perturbed_text'].tolist()]
+    texts = [text.replace("Question1: "," ").replace(">>>>Question2: ","</s></s>") for text in texts]
     return [(t, l) for t, l in list(zip(texts, labels))]
-
 
 def get_data_huggingface(data_args: Any, split: str = 'train') -> List[Any]:
     if data_args.huggingface_subset_name is None:

@@ -24,13 +24,22 @@ task_to_keys = {
 def get_load_text_file(task_name: str,
                        split_name: str
                        ) -> str:
-    text = ["import jsonlines",
-            "dataset = []",
-            f"with jsonlines.open('data/{task_name}/{split_name}.json', 'r') as reader:",
-            "    for items in reader:",
-            "        dataset.append(items)",
-            "dataset = [(element['text'], element['label']) for element in dataset]"
-            ]
+    if 'qqp' not in split_name:
+        text = ["import jsonlines",
+                "dataset = []",
+                f"with jsonlines.open('data/{task_name}/{split_name}.json', 'r') as reader:",
+                "    for items in reader:",
+                "        dataset.append(items)",
+                "dataset = [(element['text'], element['label']) for element in dataset]"
+                ]
+    else:
+        text = ["import jsonlines",
+                "dataset = []",
+                f"with jsonlines.open('data/{task_name}/{split_name}.json', 'r') as reader:",
+                "    for items in reader:",
+                "        dataset.append(items)",
+                "dataset = [(element['question1'] + '</s></s>' + element['question2'], element['label']) for element in dataset]"
+                ]
     return text
 
 

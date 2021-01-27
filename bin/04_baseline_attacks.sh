@@ -10,7 +10,7 @@ if [ ! -d ${RESULTS_DIR} ]; then
   mkdir -p ${RESULTS_DIR};
 fi
 
-for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
+for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
             textattack attack \
@@ -30,7 +30,7 @@ done
 ## (in white-box/black-box scenario. SOTA models to fool)
 # 4. save table with metrics to ./results folder
 
-for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
+for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
     
     if [ $dataset == "dstc" ]; then
     num_labels=46
@@ -42,12 +42,11 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
     
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
-            TARGET_PATH_OR_NAME=models/${dataset}/bert/
 
             PYTHONPATH=. python dilma/commands/evaluate.py \
                 ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
                 --save-to ${RESULTS_DIR}/${model}_${dataset}_${dataset}.json \
-                --target-clf-path ${TARGET_PATH_OR_NAME} \
+                --target-clf-path ./presets/transformer_models/${dataset} \
                 --output-from-textattack \
                 --num-labels ${num_labels}
         done
