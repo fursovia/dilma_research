@@ -10,9 +10,11 @@ if [ ! -d ${RESULTS_DIR} ]; then
   mkdir -p ${RESULTS_DIR};
 fi
 
-for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
+for dataset in "qqp" "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
     for model in "lstm"; do
         for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
+            
+            if [ $dataset == "qqp" ]; then
             textattack attack \
                 --recipe ${attacker} \
                 --model-from-file ./presets/textattack_models/${dataset}/load_lstm.py \
@@ -20,6 +22,17 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
                 --num-examples ${NUM_EXAMPLES} \
                 --log-to-csv ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
                 --disable-stdout
+            
+            else
+            textattack attack \
+                --recipe ${attacker} \
+                --model-from-file ./presets/textattack_models/${dataset}/load_lstm.py \
+                --dataset-from-file data/${dataset}/load_test.py \
+                --num-examples ${NUM_EXAMPLES} \
+                --log-to-csv ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
+                --disable-stdout
+            fi
+            
         done
     done
 done

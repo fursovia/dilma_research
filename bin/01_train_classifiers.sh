@@ -60,7 +60,7 @@ done
 
 # 2) TRAIN TARGET CLASSIFIER (THE ONES TEXTATTACK DOESNT HAVE)
 
-for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
+for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2" "qqp"; do
     EXP_NAME=${dataset}-roberta
     LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
