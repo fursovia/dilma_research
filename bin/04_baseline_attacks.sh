@@ -84,7 +84,7 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
                 --dataset-from-file data/${dataset}/load_substitute_train.py \
                 --num-examples ${NUM_EXAMPLES} \
                 --log-to-csv ${RESULTS_DIR}/roberta_${dataset}_${attacker}.csv \
-                --disable-stdout
+                --disable-stdoutT
             
             else
             

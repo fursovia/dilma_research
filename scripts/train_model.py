@@ -210,7 +210,7 @@ def main():
     else:  # load dataset from file
         if other_args.substitute_train:
             train_data = get_data_from_file(
-                f"data/{data_args.task_name}/data/substitute_train.json")
+                f"data/{data_args.task_name}/substitute_train.json")
             def get_load_model_file():
                 text = ["import torch",
                         "import textattack",
@@ -218,7 +218,7 @@ def main():
                         "tokenizer = AutoTokenizer.from_pretrained('./presets/transformer_substitute_models/qqp/')",
                         "config = AutoConfig.from_pretrained('./presets/transformer_substitute_models/qqp/', num_labels=2)",
                         "model = AutoModelForSequenceClassification.from_pretrained('./presets/transformer_substitute_models/qqp/', config = config)",
-                        "model = textattack.models.wrappers.HuggingFaceModelWrapper(model, tokenizer, 64)
+                        "model = textattack.models.wrappers.HuggingFaceModelWrapper(model, tokenizer, 64)"
                        ]
                 return text
             
@@ -228,7 +228,7 @@ def main():
             
         else:
             train_data = get_data_from_file(
-                f"data/{data_args.task_name}/data/train.json")
+                f"data/{data_args.task_name}/train.json")
         num_labels = len(set([i[1] for i in train_data]))
         train_encodings = tokenizer([i[0] for i in train_data],
                                     truncation=True,
@@ -244,7 +244,7 @@ def main():
                 'label'])
 
         val_data = get_data_from_file(
-            f"data/{data_args.task_name}/data/valid.json")
+            f"data/{data_args.task_name}/valid.json")
         val_encodings = tokenizer([i[0] for i in val_data],
                                   truncation=True,
                                   padding='max_length',
@@ -412,3 +412,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
