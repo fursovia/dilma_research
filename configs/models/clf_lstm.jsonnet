@@ -6,7 +6,7 @@ local transformer_model = "bert-base-uncased";
     "tokenizer": {
       "type": "pretrained_transformer",
       "model_name": transformer_model,
-      "add_special_tokens": true
+      "add_special_tokens": false
     },
 //    "token_indexers": {
 //      "tokens": {
