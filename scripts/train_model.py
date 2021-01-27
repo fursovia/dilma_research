@@ -151,6 +151,10 @@ class OtherArguments:
         metadata={"help": "stop if val. loss increases during last n epochs"},
         default=False,
     )
+    substitute_train: bool = field(
+        metadata={"help": "use substitute set of data or train"},
+        default=False,
+    )
 
 
 def main():
@@ -162,6 +166,8 @@ def main():
          OtherArguments))
     model_args, data_args, training_args, other_args = parser.parse_args_into_dataclasses()
     training_args.disable_tqdm = True
+    if not os.path.exists(training_args.output_dir):
+        os.makedirs(training_args.output_dir)
 
     device = torch.device(other_args.device)
     if training_args.seed is not None:
@@ -202,8 +208,27 @@ def main():
         validation_dataset = data[other_args.validation_split_name]
 
     else:  # load dataset from file
-        train_data = get_data_from_file(
-            f"data/{data_args.task_name}/data/train.json")
+        if other_args.substitute_train:
+            train_data = get_data_from_file(
+                f"data/{data_args.task_name}/data/substitute_train.json")
+            def get_load_model_file():
+                text = ["import torch",
+                        "import textattack",
+                        "from transformers import AutoTokenizer, AutoConfig, AutoModelForSequenceClassification",
+                        "tokenizer = AutoTokenizer.from_pretrained('./presets/transformer_substitute_models/qqp/')",
+                        "config = AutoConfig.from_pretrained('./presets/transformer_substitute_models/qqp/', num_labels=2)",
+                        "model = AutoModelForSequenceClassification.from_pretrained('./presets/transformer_substitute_models/qqp/', config = config)",
+                        "model = textattack.models.wrappers.HuggingFaceModelWrapper(model, tokenizer, 64)
+                       ]
+                return text
+            
+            with open(f"{training_args.output_dir}/load_model.py", "w") as file_handler:
+                for item in get_load_model_file():
+                    file_handler.write("{}\n".format(item))
+            
+        else:
+            train_data = get_data_from_file(
+                f"data/{data_args.task_name}/data/train.json")
         num_labels = len(set([i[1] for i in train_data]))
         train_encodings = tokenizer([i[0] for i in train_data],
                                     truncation=True,
@@ -253,12 +278,13 @@ def main():
             )
         )
         random.seed(123)
-        train_dataset = train_dataset.select(
-            random.sample(
-                list(range(len(train_dataset))),
-                other_args.adversarial_training_original_data_amount
+        if other_args.adversarial_training_original_data_amount != -1:
+            train_dataset = train_dataset.select(
+                random.sample(
+                    list(range(len(train_dataset))),
+                    other_args.adversarial_training_original_data_amount
+                )
             )
-        )
         train_dataset.save_to_disk('path_to_save_dataset1')
         train_dataset = load_from_disk('path_to_save_dataset1')
 
@@ -353,9 +379,6 @@ def main():
         optimizers=(optimizer, scheduler),
         data_collator=default_data_collator,
     )
-
-    if not os.path.exists(training_args.output_dir):
-        os.makedirs(training_args.output_dir)
     if training_args.do_train:
         if other_args.use_custom_trainer:
             trainer.train(

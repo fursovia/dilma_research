@@ -19,7 +19,9 @@ echo "================================" >> ${logger_name}.txt
 echo "dataset ${dataset} ADVERSARIAL TRAINING" >> ${logger_name}.txt
 
 #train on adversarial data
-for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
+for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
+    mkdir -p ./presets/transformer_models_adv_trained_model/${dataset}
+    mkdir -p ./presets/transformer_models_adv_trained_model_from_scratch/${dataset}
     for attacker in "deepwordbug" "textbugger" "pwws" "hotflip"; do
 
         if [ $dataset == "dstc" ]; then
@@ -29,6 +31,12 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
         else
         num_labels=2
         fi
+        
+        if [ $dataset == "qqp" ]; then
+        model="roberta"
+        else
+        model="lstm"
+        fi
 
         echo "================================" >> ${logger_name}.txt
 
@@ -36,9 +44,9 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
             echo "Train ${attacker} start; num_examples ${num_examples}" >> ${logger_name}.txt
 
             python scripts/train_model.py \
-                --model_name_or_path models/${dataset}/model/ \
-                --config_name models/${dataset}/model/ \
-                --tokenizer_name models/${dataset}/model/ \
+                --model_name_or_path ./presets/transformer_models/${dataset}/ \
+                --config_name ./presets/transformer_models/${dataset}/ \
+                --tokenizer_name ./presets/transformer_models/${dataset}/ \
                 --task_name ${dataset} \
                 --do_train \
                 --do_eval \
@@ -51,8 +59,8 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
                 --evaluation_strategy "epoch" \
                 --save_total_limit 0 \
                 --evaluate_during_training \
-                --output_dir models/${dataset}/adv_trained_model/ \
-                --adversarial_data_path ${ADV_TRAIN_DIR}/lstm_${dataset}_${attacker}.csv \
+                --output_dir ./presets/transformer_models_adv_trained_model/${dataset}
+                --adversarial_data_path ${ADV_TRAIN_DIR}/${model}_${dataset}_${attacker}.csv \
                 --adversarial_training_original_data_amount ${num_examples} \
                 --adversarial_training_perturbed_data_amount ${num_examples} \
                 --use_custom_trainer \
@@ -69,12 +77,12 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
                 --per_device_train_batch_size ${batch_size} \
                 --per_device_eval_batch_size ${batch_size} \
                 --learning_rate 2e-5 \
-                --num_train_epochs 25 \
+                --num_train_epochs 7 \
                 --save_steps -1 \
                 --evaluation_strategy "epoch" \
                 --save_total_limit 0 \
                 --evaluate_during_training \
-                --output_dir models/${dataset}/adv_trained_model/ \
+                --output_dir ./presets/transformer_models_adv_trained_model_from_scratch/${dataset} \
                 --adversarial_data_path ${ADV_TRAIN_DIR}/lstm_${dataset}_${attacker}.csv \
                 --adversarial_training_original_data_amount -1 \
                 --adversarial_training_perturbed_data_amount ${num_examples} \
@@ -86,8 +94,15 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
 
             PYTHONPATH=. python dilma/commands/evaluate.py \
                 ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
-                --save-to ${ADV_TRAIN_DIR}/${dataset}_${num_examples}.json \
-                --target-clf-path models/${dataset}/adv_trained_model/ \
+                --save-to ${ADV_TRAIN_DIR}/${dataset}_${num_examples}_finetune.json \
+                --target-clf-path ./presets/transformer_models_adv_trained_model/${dataset} \
+                --output-from-textattack \
+                --num-labels ${num_labels}
+        
+            PYTHONPATH=. python dilma/commands/evaluate.py \
+                ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
+                --save-to ${ADV_TRAIN_DIR}/${dataset}_${num_examples}_fromscratch.json \
+                --target-clf-path ./presets/transformer_models_adv_trained_model_from_scratch/${dataset} \
                 --output-from-textattack \
                 --num-labels ${num_labels}
 

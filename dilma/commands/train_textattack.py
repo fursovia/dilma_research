@@ -589,7 +589,7 @@ def train_model(args):
                 _save_model_checkpoint(model, args.output_dir, args.global_step)
 
             logger.info(
-                f"Eval {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
+                f"Epoch {epoch} Eval {'pearson correlation' if args.do_regression else 'accuracy'}: {eval_score*100}%"
             )
             if eval_score > args.best_eval_score:
                 args.best_eval_score = eval_score
