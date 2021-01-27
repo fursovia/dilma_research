@@ -81,8 +81,13 @@ class Attacker(ABC, Registrable):
         return probs
 
     def get_probs_from_string(self, text: str) -> torch.Tensor:
-        inputs = self.text_to_textfield_tensors(text)
-        return self.get_probs_from_textfield_tensors(inputs)
+        if text:
+            inputs = self.text_to_textfield_tensors(text)
+            return self.get_probs_from_textfield_tensors(inputs)
+        else:
+            num_labels = self.classifier._num_labels
+            probs = torch.ones(1, num_labels) / num_labels
+            return move_to_device(probs, self.device)
 
     def text_to_textfield_tensors(self, text: str) -> Dict[str, torch.Tensor]:
         instances = Batch([
@@ -107,6 +112,8 @@ class Attacker(ABC, Registrable):
 
     @staticmethod
     def find_best_attack(outputs: List[AttackerOutput]) -> AttackerOutput:
+        # drop zero-length examples
+        outputs = list(filter(lambda x: len(x.text) > 0, outputs))
         if len(outputs) == 1:
             return outputs[0]
 
