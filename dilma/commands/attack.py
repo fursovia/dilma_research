@@ -50,6 +50,7 @@ def attack(
             except TypeError:
                 inputs = PairClassificationData(**sample)
 
+            typer.echo(inputs.text)
             adversarial_output = attacker.attack(inputs)
             initial_text = adversarial_output.data.text
             adv_text = adversarial_output.adversarial_data.text
