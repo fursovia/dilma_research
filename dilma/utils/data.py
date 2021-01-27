@@ -37,8 +37,6 @@ def clear_texts(list_of_texts: List[str]) -> List[str]:
     return [re.sub(r"(\[\[)|(\]\])", "", i).replace("Question1: ","").replace(">>>>Question2: "," ") for i in list_of_texts]
 
 
-
-
 def decode_indexes(
     indexes: torch.Tensor, vocab: Vocabulary, namespace="transactions", drop_start_end: bool = True,
 ) -> List[str]:

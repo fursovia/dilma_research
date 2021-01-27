@@ -25,6 +25,8 @@ for dataset_name in "sst2" "ag_news" "rotten_tomatoes"; do
         attack_name=$(basename ${config_path})
         attack_name="${attack_name%.*}"
 
+        echo ">>> Attacking ${dataset_name} with ${attack_name}"
+
         RESULTS_PATH=${RESULTS_DIR}/${DATE}/${dataset_name}/${attack_name}
         mkdir -p ${RESULTS_PATH}
 
