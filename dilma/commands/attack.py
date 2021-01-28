@@ -5,7 +5,7 @@ from allennlp.common.params import Params
 import typer
 import jsonlines
 
-from dilma.attackers import Attacker
+from dilma.attackers.attacker import Attacker, AttackerOutput
 from dilma.constants import ClassificationData, PairClassificationData
 from dilma.utils.data import load_jsonlines
 
@@ -52,7 +52,16 @@ def attack(
                 inputs = PairClassificationData(**sample)
 
             typer.echo(inputs.text)
-            adversarial_output = attacker.attack(inputs)
+            try:
+                adversarial_output = attacker.attack(inputs)
+            except Exception as e:
+                error_message = typer.style(f"Failed to attack because {e}", fg=typer.colors.RED, bold=True)
+                typer.echo(error_message)
+
+                adversarial_output = AttackerOutput(
+                    data=inputs, adversarial_data=inputs, probability=1.0, adversarial_probability=1.0
+                )
+
             initial_text = adversarial_output.data.text
             adv_text = adversarial_output.adversarial_data.text
 
