@@ -40,6 +40,7 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
     mkdir -p ./presets/textattack_models/${dataset}
     cp ${LOG_DIR}/pytorch_model.bin ./presets/textattack_models/${dataset}/
     cp ${LOG_DIR}/load_lstm.py ./presets/textattack_models/${dataset}/
+    cp ${LOG_DIR}/log.txt ./presets/textattack_models/${dataset}/
 done
 
 
