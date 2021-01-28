@@ -55,7 +55,7 @@ def attack(
             try:
                 adversarial_output = attacker.attack(inputs)
             except Exception as e:
-                error_message = typer.style(f"Failed to attack because {e}", fg=typer.colors.RED, bold=True)
+                error_message = typer.style(f">>> Failed to attack because {e}", fg=typer.colors.RED, bold=True)
                 typer.echo(error_message)
 
                 adversarial_output = AttackerOutput(
