@@ -63,7 +63,7 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
         
         PYTHONPATH=. python dilma/commands/evaluate.py \
             ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
-            --save-to ${RESULTS_DIR}/${model}_${dataset}_${dataset}.json \
+            --save-to ${RESULTS_DIR}/${model}_${dataset}_${attacker}.json \
             --target-clf-path ./presets/transformer_models/${dataset} \
             --output-from-textattack \
             --num-labels ${num_labels}
