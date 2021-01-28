@@ -99,7 +99,7 @@ class DILMA(Attacker):
 
         adv_texts = []
         if self.num_samples is None:
-            indexes = self.truncate_start_end_tokens(lm_probs.argmax(dim=2))
+            indexes = lm_probs.argmax(dim=2)
         else:
             indexes = Categorical(probs=lm_probs[0]).sample((self.num_samples,))
 
