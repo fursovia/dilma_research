@@ -2,7 +2,7 @@ local clf_path = std.extVar("CLF_PATH");
 
 {
   "attacker": {
-    "type": "dilma",
+    "type": "sampling_fool",
     "archive_path": clf_path,
     "bert_name_or_path": "bert-base-uncased",
     "num_samples": 40,
