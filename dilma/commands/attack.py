@@ -27,19 +27,20 @@ def attack(
     attacker = Attacker.from_params(params["attacker"])
     data = load_jsonlines(data_path)[:samples]
 
-    out_dir = out_dir or "./results"
-    out_dir = Path(out_dir)
-    out_dir.mkdir(exist_ok=True, parents=True)
-
     dataset_name = Path(data_path).parent.name
     attack_name = Path(config_path).stem
 
+    if out_dir is None:
+        out_dir = Path("./results") / f"{date}__{dataset_name}__{attack_name}"
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(exist_ok=True, parents=True)
+
     params["data_path"] = str(data_path)
     params["out_dir"] = str(out_dir)
-    prefix = f"{date}__{dataset_name}__{attack_name}"
-    config_path = out_dir / (prefix + "__config.json")
+    config_path = out_dir / "config.json"
     params.to_file(str(config_path))
-    output_path = out_dir / (prefix + "__data.json")
+    output_path = out_dir / "data.json"
 
     typer.secho(f"Saving results to {output_path}...", fg="green")
     with jsonlines.open(output_path, "w") as writer:

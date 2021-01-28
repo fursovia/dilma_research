@@ -31,11 +31,25 @@ for dataset_name in "sst2" "ag_news" "rotten_tomatoes" "dstc"; do
         mkdir -p ${RESULTS_PATH}
 
         CLF_PATH=${PRESETS_DIR}/models/${dataset_name}.tar.gz \
-          PYTHONPATH=. python dilma/commands/attack.py ${config_path} ${data_path} --samples ${NUM_SAMPLES}
+          PYTHONPATH=. python dilma/commands/attack.py \
+          ${config_path} \
+          ${data_path} \
+          --out-dir ./results/${DATE}__${dataset_name}__${attack_name} \
+          --samples ${NUM_SAMPLES}
 
-        PYTHONPATH=. python dilma/commands/evaluate.py ${RESULTS_PATH}/output.json \
-            --save-to=${RESULTS_PATH}/metrics.json \
-            --target-clf-path=${PRESETS_DIR}/${dataset_name}/models/target_clf/${TARGET_CONFIG_NAME}.tar.gz
+        if [ $dataset_name == "dstc" ]; then
+        num_labels=46
+        elif [ $dataset_name == "ag_news" ]; then
+        num_labels=4
+        else
+        num_labels=2
+        fi
+
+        PYTHONPATH=. python dilma/commands/evaluate.py \
+          ./results/${DATE}__${dataset_name}__${attack_name}/data.json \
+          --save-to ./results/${DATE}__${dataset_name}__${attack_name}/metrics.json \
+          --target-clf-path ./presets/transformer_models/${dataset_name} \
+          --num-labels ${num_labels}
     done
 done
 
