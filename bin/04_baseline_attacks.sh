@@ -53,16 +53,20 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
     num_labels=2
     fi
     
-    for model in "lstm"; do
-        for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
-
-            PYTHONPATH=. python dilma/commands/evaluate.py \
-                ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
-                --save-to ${RESULTS_DIR}/${model}_${dataset}_${dataset}.json \
-                --target-clf-path ./presets/transformer_models/${dataset} \
-                --output-from-textattack \
-                --num-labels ${num_labels}
-        done
+    if [ $dataset == "qqp" ]; then
+    model="roberta"
+    else
+    model="lstm"
+    fi
+    
+    for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
+        
+        PYTHONPATH=. python dilma/commands/evaluate.py \
+            ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
+            --save-to ${RESULTS_DIR}/${model}_${dataset}_${dataset}.json \
+            --target-clf-path ./presets/transformer_models/${dataset} \
+            --output-from-textattack \
+            --num-labels ${num_labels}
     done
 done
 
