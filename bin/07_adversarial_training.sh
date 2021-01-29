@@ -94,14 +94,14 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
 
             PYTHONPATH=. python dilma/commands/evaluate.py \
                 ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
-                --save-to ${ADV_TRAIN_DIR}/${dataset}_${num_examples}_finetune.json \
+                --save-to ${ADV_TRAIN_DIR}/${attacker}_${dataset}_${num_examples}_finetune.json \
                 --target-clf-path ./presets/transformer_models_adv_trained_model/${dataset} \
                 --output-from-textattack \
                 --num-labels ${num_labels}
         
             PYTHONPATH=. python dilma/commands/evaluate.py \
                 ${RESULTS_DIR}/${model}_${dataset}_${attacker}.csv \
-                --save-to ${ADV_TRAIN_DIR}/${dataset}_${num_examples}_fromscratch.json \
+                --save-to ${ADV_TRAIN_DIR}/${attacker}_${dataset}_${num_examples}_fromscratch.json \
                 --target-clf-path ./presets/transformer_models_adv_trained_model_from_scratch/${dataset} \
                 --output-from-textattack \
                 --num-labels ${num_labels}

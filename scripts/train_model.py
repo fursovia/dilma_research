@@ -229,6 +229,7 @@ def main():
         else:
             train_data = get_data_from_file(
                 f"data/{data_args.task_name}/train.json")
+        
         num_labels = len(set([i[1] for i in train_data]))
         train_encodings = tokenizer([i[0] for i in train_data],
                                     truncation=True,
@@ -285,8 +286,15 @@ def main():
                     other_args.adversarial_training_original_data_amount
                 )
             )
+        else:
+            train_dataset = train_dataset.select(
+                random.sample(
+                    list(range(len(train_dataset))),
+                    len(train_dataset)
+                )
+            )
         train_dataset.save_to_disk('path_to_save_dataset1')
-        train_dataset = load_from_disk('path_to_save_dataset1')
+        train_dataset_from_disk = load_from_disk('path_to_save_dataset1')
 
         adv_data = get_adv_data(other_args.adversarial_data_path)
         adv_encodings = tokenizer([i[0] for i in adv_data],
@@ -318,7 +326,7 @@ def main():
         adv_dataset.save_to_disk('path_to_save_dataset2')
         adv_dataset = load_from_disk('path_to_save_dataset2')
 
-        train_dataset = concatenate_datasets([train_dataset,
+        train_dataset = concatenate_datasets([train_dataset_from_disk,
                                               adv_dataset])
 
     train_dataset = train_dataset.shuffle()
