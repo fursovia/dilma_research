@@ -19,12 +19,17 @@ class PairClassifier(Model):
         text_field_embedder: TextFieldEmbedder,
         seq2vec_encoder: Seq2VecEncoder,
         seq2seq_encoder: Optional[Seq2SeqEncoder] = None,
+        dropout: float = None
     ) -> None:
         super().__init__(vocab)
         self.text_field_embedder = text_field_embedder
         self.seq2seq_encoder = seq2seq_encoder
         self.seq2vec_encoder = seq2vec_encoder
         self.linear = torch.nn.Linear(self.seq2vec_encoder.get_output_dim() * 4, 2)
+        if dropout:
+            self._dropout = torch.nn.Dropout(dropout)
+        else:
+            self._dropout = None
         self._accuracy = CategoricalAccuracy()
         self._loss = torch.nn.CrossEntropyLoss()
 
@@ -43,6 +48,8 @@ class PairClassifier(Model):
         if self.seq2seq_encoder is not None:
             embedded_sequence = self.seq2seq_encoder(embedded_sequence, mask=mask)
         embedded_sequence_vector = self.seq2vec_encoder(embedded_sequence, mask=mask)
+        if self._dropout:
+            embedded_sequence_vector = self._dropout(embedded_sequence_vector)
         return embedded_sequence_vector
 
     def forward_on_embeddings(

@@ -38,7 +38,7 @@ local transformer_model = "bert-base-uncased";
         "dropout": 0.3,
         "bidirectional": true
     },
-    "dropout": 0.0,
+    "dropout": 0.2,
   },
   "data_loader": {
     "shuffle": true,
