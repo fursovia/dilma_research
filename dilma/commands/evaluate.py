@@ -112,6 +112,7 @@ def main(
 
     if output_from_textattack:
         output = pd.read_csv(output_path)
+        output = output.sample(min(len(output), 1000))
         y_pred = [int(i) for i in output['original_output'].tolist()]
         y_adv = [int(i) for i in output['perturbed_output'].tolist()]
         y_true = [int(i) for i in output['ground_truth_output'].tolist()]
