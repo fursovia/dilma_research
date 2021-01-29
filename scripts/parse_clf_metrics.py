@@ -24,7 +24,12 @@ def main(logdir: Path =  Path('presets'), output_path: Path = Path('presets')):
             continue
     
     # allennlp
-    ##DO
+    for dirname in Path(logdir,'allennlp_models').iterdir():
+        try:
+            stat = json.load(Path(dirname, 'metrics.json').open('r'))
+            metrics['substitute_lstm_allennlp_' + dirname.name] = stat['best_validation_accuracy']
+        except:
+            continue
     
     # transformers
     for dirname in Path(logdir,'transformer_models').iterdir():
@@ -47,7 +52,7 @@ def main(logdir: Path =  Path('presets'), output_path: Path = Path('presets')):
         except:
             continue
 
-    with open(output_path / "textattack_metrics.json", 'w') as f:
+    with open(output_path / "validation_metrics.json", 'w') as f:
         json.dump(metrics, f, indent=4)
 
 

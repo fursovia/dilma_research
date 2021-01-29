@@ -70,6 +70,8 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc" "qqp"; do
     done
 done
 
+PYTHONPATH=. python scripts/parse_attack_metrics.py 
+
 # 5*. attack M examples of the train (!) set (will be needed for adversarial training and detection)
 ADV_TRAIN_DIR='adv_training_data'
 NUM_EXAMPLES_TRAIN=10000
