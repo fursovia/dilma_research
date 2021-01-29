@@ -59,6 +59,23 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
 done
 
 
+dataset="qqp"
+CONFIG_PATH=./configs/models/pairwise_clf_lstm.jsonnet
+CONFIG_NAME=$(basename ${CONFIG_PATH})
+CONFIG_NAME="${CONFIG_NAME%.*}"
+
+EXP_NAME=-${dataset}-${CONFIG_NAME}
+LOG_DIR=./logs/${DATE}/${EXP_NAME}
+
+TRAIN_DATA_PATH=./data/${dataset}/substitute_train.json \
+  VALID_DATA_PATH=./data/${dataset}/valid.json \
+  allennlp train ${CONFIG_PATH} \
+  --serialization-dir ${LOG_DIR} \
+  --include-package dilma
+
+cp ${LOG_DIR}/model.tar.gz ./presets/${dataset}.tar.gz
+
+
 for dataset in "qqp"; do
     EXP_NAME=${dataset}-substitute-roberta
     LOG_DIR=./logs/${DATE}/${EXP_NAME}
