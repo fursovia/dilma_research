@@ -13,6 +13,7 @@ from dilma.constants import ClassificationData, PairClassificationData
 from dilma.utils.data import decode_indexes
 
 
+@Attacker.register('fgsm')
 class FGSMAttacker(Attacker):
 
     def __init__(self, archive_path: str, num_steps: int = 10, epsilon: float = 0.01, device: int = -1):
@@ -28,7 +29,7 @@ class FGSMAttacker(Attacker):
         # get inputs to the model
         inputs = self.text_to_textfield_tensors(text=data_to_attack.text)
 
-        adversarial_idexes = inputs["tokens"]["tokens"]["tokens"][0]
+        adversarial_indexes = inputs["tokens"]["tokens"]["tokens"][0]
 
         # original probability of the true label
         orig_prob = self.get_probs_from_textfield_tensors(inputs)[self.label_to_index(data_to_attack.label)].item()
@@ -43,7 +44,7 @@ class FGSMAttacker(Attacker):
         outputs = []
         for step in range(self.num_steps):
             # choose random index of embeddings (except for start/end tokens)
-            random_idx = random.randint(1, max(1, len(data_to_attack.text) - 2))
+            random_idx = random.randint(0, max(1, len(data_to_attack.text) - 1))
             # only one embedding can be modified
             embeddings_splitted[random_idx].requires_grad = True
 
@@ -72,10 +73,11 @@ class FGSMAttacker(Attacker):
             embeddings_splitted = [e.detach() for e in embeddings_splitted]
 
             # get adversarial indexes
-            adversarial_idexes[random_idx] = closest_idx
+            adversarial_indexes[random_idx] = closest_idx
 
             adv_data = deepcopy(data_to_attack)
-            adv_data.text = decode_indexes(adversarial_idexes, vocab=self.vocab)
+            # TODO: decode using tokenizer
+            adv_data.text = " ".join(decode_indexes(adversarial_indexes, vocab=self.vocab))
 
             adv_inputs = self.text_to_textfield_tensors(adv_data.text)
 

@@ -17,7 +17,7 @@ for dataset in "qqp" "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
             if [ $dataset == "qqp" ]; then
             textattack attack \
                 --recipe ${attacker} \
-                --model-from-file ./presets/transformer_substitute_models/${dataset}/load_model.py
+                --model-from-file ./presets/transformer_substitute_models/${dataset}/load_model.py \
                 --dataset-from-file data/${dataset}/load_test.py \
                 --num-examples ${NUM_EXAMPLES} \
                 --log-to-csv ${RESULTS_DIR}/roberta_${dataset}_${attacker}.csv \
@@ -84,7 +84,7 @@ for dataset in "rotten_tomatoes" "ag_news" "sst2" "dstc"; do
             if [ $dataset == "qqp" ]; then
             textattack attack \
                 --recipe ${attacker} \
-                --model-from-file ./presets/transformer_substitute_models/${dataset}/load_model.py
+                --model-from-file ./presets/transformer_substitute_models/${dataset}/load_model.py \
                 --dataset-from-file data/${dataset}/load_substitute_train.py \
                 --num-examples ${NUM_EXAMPLES} \
                 --log-to-csv ${RESULTS_DIR}/roberta_${dataset}_${attacker}.csv \
