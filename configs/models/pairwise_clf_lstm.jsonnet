@@ -34,14 +34,14 @@ local transformer_model = "bert-base-uncased";
         "input_size": 128,
         "hidden_size": 256,
         "num_layers": 1,
-        "dropout": 0.1,
+        "dropout": 0.3,
         "bidirectional": true
     },
-    "dropout": 0.2
+//    "dropout": 0.2
   },
   "data_loader": {
     "shuffle": true,
-    "batch_size": 256,
+    "batch_size": 512,
     "num_workers": 0,
     "pin_memory": true
   },
