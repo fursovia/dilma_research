@@ -47,7 +47,7 @@ class PairwiseReader(DatasetReader):
         fields["sequence_b"] = TextField(self._tokenizer.tokenize(sequence_b), self._token_indexers)
 
         if label is not None:
-            fields["label"] = LabelField(label, skip_indexing=self._skip_label_indexing)
+            fields["label"] = LabelField(str(label), skip_indexing=self._skip_label_indexing)
 
         return Instance(fields)
 
