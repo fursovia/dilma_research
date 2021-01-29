@@ -2,42 +2,54 @@ from typing import Dict, Optional, Union
 import json
 
 import numpy as np
-from overrides import overrides
 from allennlp.common.file_utils import cached_path
-from allennlp.data.dataset_readers import DatasetReader, TextClassificationJsonReader
-from allennlp.data.fields import MetadataField, TextField, Field, ArrayField
+from allennlp.data.dataset_readers import DatasetReader
+from allennlp.data.fields import TextField, Field, ArrayField, LabelField
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 from allennlp.data.tokenizers import Tokenizer
 
 
-@DatasetReader.register('pairwise')
-class PairwiseReader(TextClassificationJsonReader):
+@DatasetReader.register(name="pairwise")
+class PairwiseReader(DatasetReader):
     def __init__(
-        self,
-        token_indexers: Optional[Dict[str, TokenIndexer]] = None,
-        tokenizer: Optional[Tokenizer] = None,
-        segment_sentences: bool = False,
-        max_sequence_length: Optional[int] = None,
-        skip_label_indexing: bool = False,
-        **kwargs,
+            self,
+            tokenizer: Tokenizer,
+            token_indexers: Dict[str, TokenIndexer] = None,
+            skip_label_indexing: bool = False,
+            lazy: bool = False
     ) -> None:
-        super().__init__(
-            token_indexers=token_indexers,
-            tokenizer=tokenizer,
-            segment_sentences=segment_sentences,
-            max_sequence_length=max_sequence_length,
-            skip_label_indexing=skip_label_indexing,
-            **kwargs,
-        )
+        super().__init__(lazy)
+        self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
+        self._tokenizer = tokenizer
+        self._skip_label_indexing = skip_label_indexing
 
-    @overrides
-    def text_to_instance(self, text: str, label: Union[str, int] = None) -> Instance:
-        if self._preprocessor is not None:
-            text = self._preprocessor(text)
-        instance = super().text_to_instance(text=text, label=label)
-        instance.fields['texts'] = MetadataField(text)
-        return instance
+    def _read(self, file_path):
+        with open(cached_path(file_path), "r") as data_file:
+            for line in data_file.readlines():
+                if not line:
+                    continue
+                items = json.loads(line)
+                seq_a = items["text1"]
+                seq_b = items["text2"]
+                label = items.get("label")
+                instance = self.text_to_instance(sequence_a=seq_a, sequence_b=seq_b, label=label)
+                yield instance
+
+    def text_to_instance(
+        self,
+        sequence_a: str,
+        sequence_b: str,
+        label: Optional[str] = None
+    ) -> Instance:
+        fields: Dict[str, Field] = dict()
+        fields["sequence_a"] = TextField(self._tokenizer.tokenize(sequence_a), self._token_indexers)
+        fields["sequence_b"] = TextField(self._tokenizer.tokenize(sequence_b), self._token_indexers)
+
+        if label is not None:
+            fields["label"] = LabelField(label, skip_indexing=self._skip_label_indexing)
+
+        return Instance(fields)
 
 
 @DatasetReader.register(name="deep_levenshtein")

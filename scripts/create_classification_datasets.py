@@ -61,6 +61,23 @@ def get_train_valid(dataset, valid_split: str, namespace: list):
         valid.append({('text' if key in ['text', 'sentence'] else key): (clean_text(
             i[key]) if isinstance(i[key], str) else i[key]) for key in namespace})
 
+    # qqp hack
+    if "question1" in train[0]:
+        new_train = []
+        for ex in train:
+            ex["text1"] = ex.pop("question1")
+            ex["text2"] = ex.pop("question2")
+            new_train.append(ex)
+
+        new_valid = []
+        for ex in valid:
+            ex["text1"] = ex.pop("question1")
+            ex["text2"] = ex.pop("question2")
+            new_valid.append(ex)
+
+        train = new_train
+        valid = new_valid
+
     return train, valid
 
 
