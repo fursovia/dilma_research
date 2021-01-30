@@ -55,7 +55,7 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
       --serialization-dir ${LOG_DIR} \
       --include-package dilma
 
-    cp ${LOG_DIR}/model.tar.gz ./presets/${dataset}.tar.gz
+    cp ${LOG_DIR}/model.tar.gz ./presets/models/${dataset}.tar.gz
 done
 
 
@@ -73,7 +73,7 @@ TRAIN_DATA_PATH=./data/${dataset}/substitute_train.json \
   --serialization-dir ${LOG_DIR} \
   --include-package dilma
 
-cp ${LOG_DIR}/model.tar.gz ./presets/${dataset}.tar.gz
+cp ${LOG_DIR}/model.tar.gz ./presets/models/${dataset}.tar.gz
 
 
 for dataset in "qqp"; do
