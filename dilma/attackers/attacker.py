@@ -101,18 +101,22 @@ class Attacker(ABC, Registrable):
                 inputs = self.text_to_textfield_tensors(text)
                 return self.get_probs_from_textfield_tensors(inputs)
             else:
-                inputs = self.text_to_textfield_tensors(text)
-                inputs2 = self.text_to_textfield_tensors(text2)
-                return self.get_probs_from_textfield_tensors(inputs, inputs2)
+                inputs = self.text_to_textfield_tensors(text, text2)
+                return self.get_probs_from_textfield_tensors(inputs['sequence_a'], inputs['sequence_b'])
         else:
             num_labels = self.classifier._num_labels
             probs = torch.ones(1, num_labels) / num_labels
             return move_to_device(probs, self.device)
 
-    def text_to_textfield_tensors(self, text: str) -> Dict[str, torch.Tensor]:
-        instances = Batch([
-            self.reader.text_to_instance(text)
-        ])
+    def text_to_textfield_tensors(self, text: str, text2: str = None) -> Dict[str, torch.Tensor]:
+        if text2 is None:
+            instances = Batch([
+                self.reader.text_to_instance(text)
+            ])
+        else:
+            instances = Batch([
+                self.reader.text_to_instance(text, text2)
+            ])
         instances.index_instances(self.vocab)
         inputs = instances.as_tensor_dict()
         return move_to_device(inputs, cuda_device=self.device)
