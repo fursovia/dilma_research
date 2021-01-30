@@ -21,11 +21,8 @@ DATE=$(date +%H%M%S-%d%m)
 for dataset_name in "rotten_tomatoes" "sst2" "ag_news" "dstc"; do
     data_path=${DATA_DIR}/${dataset_name}/test.json
 
-#    for config_path in ${CONFIG_DIR}/*.jsonnet; do
     for attack_name in "dilma" "dilma_with_deep_levenshtein" "sampling_fool" "fgsm"; do
         config_path=./configs/attacks/${attack_name}.jsonnet
-#        attack_name=$(basename ${config_path})
-#        attack_name="${attack_name%.*}"
 
         echo ">>> Attacking ${dataset_name} with ${attack_name}"
 
