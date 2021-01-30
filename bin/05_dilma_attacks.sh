@@ -18,33 +18,6 @@ RESULTS_DIR="./results"
 DATE=$(date +%H%M%S-%d%m)
 
 
-for dataset_name in "qqp"; do
-    data_path=${DATA_DIR}/${dataset_name}/test.json
-
-    for attack_name in "pair_dilma"; do
-        config_path=./configs/attacks/${attack_name}.jsonnet
-
-        echo ">>> Attacking ${dataset_name} with ${attack_name}"
-
-        RESULTS_PATH=${RESULTS_DIR}/${DATE}/${dataset_name}/${attack_name}
-        mkdir -p ${RESULTS_PATH}
-
-        CLF_PATH=${PRESETS_DIR}/models/${dataset_name}.tar.gz \
-          PYTHONPATH=. python dilma/commands/attack.py \
-          ${config_path} \
-          ${data_path} \
-          --out-dir ./results/${DATE}__${dataset_name}__${attack_name} \
-          --samples ${NUM_SAMPLES}
-
-        PYTHONPATH=. python dilma/commands/evaluate.py \
-          ./results/${DATE}__${dataset_name}__${attack_name}/data.json \
-          --save-to ./results/${DATE}__${dataset_name}__${attack_name}/metrics.json \
-          --target-clf-path ./presets/transformer_models/${dataset_name} \
-          --num-labels ${num_labels}
-    done
-done
-
-
 for dataset_name in "rotten_tomatoes" "sst2" "ag_news" "dstc"; do
     data_path=${DATA_DIR}/${dataset_name}/test.json
 
@@ -81,5 +54,31 @@ for dataset_name in "rotten_tomatoes" "sst2" "ag_news" "dstc"; do
           --num-labels ${num_labels}
     done
 done
+
+
+for dataset_name in "qqp"; do
+    data_path=${DATA_DIR}/${dataset_name}/test.json
+
+    for attack_name in "pair_dilma"; do
+        config_path=./configs/attacks/${attack_name}.jsonnet
+
+        echo ">>> Attacking ${dataset_name} with ${attack_name}"
+
+        RESULTS_PATH=${RESULTS_DIR}/${DATE}/${dataset_name}/${attack_name}
+        mkdir -p ${RESULTS_PATH}
+
+        CLF_PATH=${PRESETS_DIR}/models/${dataset_name}.tar.gz \
+          PYTHONPATH=. python dilma/commands/attack.py \
+          ${config_path} \
+          ${data_path} \
+          --out-dir ./results/${DATE}__${dataset_name}__${attack_name} \
+          --samples ${NUM_SAMPLES}
+
+        PYTHONPATH=. python dilma/commands/evaluate.py \
+          ./results/${DATE}__${dataset_name}__${attack_name}/data.json \
+          --save-to ./results/${DATE}__${dataset_name}__${attack_name}/metrics.json \
+          --target-clf-path ./presets/transformer_models/${dataset_name} \
+          --num-labels ${num_labels}
+    done
 
 python dilma/commands/aggregate.py ${RESULTS_DIR}/${DATE}
