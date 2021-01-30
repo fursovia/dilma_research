@@ -12,7 +12,7 @@ from dilma.attackers.attacker import Attacker, AttackerOutput
 from dilma.utils.data import clean_text
 
 
-@Attacker.register("dilma")
+@Attacker.register("pair_dilma")
 class PairDILMA(Attacker):
 
     def __init__(
