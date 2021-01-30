@@ -6,7 +6,7 @@ local clf_path = std.extVar("CLF_PATH");
     "archive_path": clf_path,
     "bert_name_or_path": "bert-base-uncased",
     "deeplev_archive_path": null,
-    "beta": 1.0,
+    "beta": 0.0,
     "num_steps": 30,
     "lr": 0.001,
     "num_gumbel_samples": 1,
