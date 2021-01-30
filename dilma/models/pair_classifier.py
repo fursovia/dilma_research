@@ -56,7 +56,7 @@ class PairClassifier(Model):
             self,
             embedded_sequence_a: torch.Tensor,
             embedded_sequence_b: torch.Tensor
-    ) -> torch.Tensor:
+    ):
         diff = torch.abs(embedded_sequence_a - embedded_sequence_b)
         representation = torch.cat(
             [
@@ -64,8 +64,10 @@ class PairClassifier(Model):
             ],
             dim=-1
         )
-        approx_distance = self.linear(representation)
-        return approx_distance
+        logits = self.linear(representation)
+        probs = torch.nn.functional.softmax(logits, dim=-1)
+        output_dict = {"logits": logits, "probs": probs}
+        return output_dict
 
     def forward(
         self,
@@ -75,14 +77,12 @@ class PairClassifier(Model):
     ) -> Dict[str, torch.Tensor]:
         embedded_sequence_a = self.encode_sequence(sequence_a)
         embedded_sequence_b = self.encode_sequence(sequence_b)
-        logits = self.forward_on_embeddings(embedded_sequence_a, embedded_sequence_b)
-        probs = torch.nn.functional.softmax(logits, dim=-1)
-        output_dict = {"logits": logits, "probs": probs}
+        output_dict = self.forward_on_embeddings(embedded_sequence_a, embedded_sequence_b)
 
         if label is not None:
-            loss = self._loss(logits, label.long().view(-1))
+            loss = self._loss(output_dict['logits'], label.long().view(-1))
             output_dict["loss"] = loss
-            self._accuracy(logits, label)
+            self._accuracy(output_dict['logits'], label)
         return output_dict
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
