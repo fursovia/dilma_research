@@ -33,7 +33,10 @@ class AttackerOutput:
             self.prob_diff = self.probability - self.adversarial_probability
 
         if self.wer is None:
-            self.wer = calculate_wer(self.data.text, self.adversarial_data.text)
+            try:
+                self.wer = calculate_wer(self.data.text, self.adversarial_data.text)
+            except AttributeError:
+                self.wer = calculate_wer(self.data.text1, self.adversarial_data.text1)
 
 
 class Attacker(ABC, Registrable):
@@ -63,27 +66,44 @@ class Attacker(ABC, Registrable):
     def truncate_start_end_tokens(data: torch.Tensor) -> torch.Tensor:
         return data[:, 1:-1]
 
-    def get_probs_from_indexes(self, indexes: torch.Tensor) -> torch.Tensor:
+    def get_probs_from_indexes(self, indexes: torch.Tensor, indexes2: torch.Tensor = None) -> torch.Tensor:
         onehot = torch.nn.functional.one_hot(indexes.long(), num_classes=self.vocab.get_vocab_size())
-        probs = self.get_probs_from_onehot(onehot)
+        if indexes2 is not None:
+            onehot2 = torch.nn.functional.one_hot(indexes2.long(), num_classes=self.vocab.get_vocab_size())
+        else:
+            onehot2 = None
+        probs = self.get_probs_from_onehot(onehot, onehot2)
         return probs
 
-    def get_probs_from_onehot(self, onehot: torch.Tensor) -> torch.Tensor:
-        emb_out = self.classifier.get_embeddings(onehot.float())
-        probs = self.classifier.forward_on_embeddings(
-            embedded_text=emb_out['embedded_text'],
-            mask=emb_out['mask']
-        )['probs']
+    def get_probs_from_onehot(self, onehot: torch.Tensor, onehot2: torch.Tensor = None) -> torch.Tensor:
+        if onehot2 is None:
+            emb_out = self.classifier.get_embeddings(onehot.float())
+            probs = self.classifier.forward_on_embeddings(
+                embedded_text=emb_out['embedded_text'],
+                mask=emb_out['mask']
+            )['probs']
+        else:
+            emb1 = self.classifier.encode_sequence(onehot.float())
+            emb2 = self.classifier.encode_sequence(onehot2.float())
+            probs = self.classifier.forward_on_embeddings(emb1, emb2)['probs']
         return probs
 
-    def get_probs_from_textfield_tensors(self, inputs: ModelsInput) -> torch.Tensor:
-        probs = self.classifier(inputs['tokens'])['probs']
+    def get_probs_from_textfield_tensors(self, inputs: ModelsInput, inputs2: ModelsInput = None) -> torch.Tensor:
+        if inputs2 is None:
+            probs = self.classifier(inputs['tokens'])['probs']
+        else:
+            probs = self.classifier(inputs['tokens'], inputs2['tokens'])['probs']
         return probs
 
-    def get_probs_from_string(self, text: str) -> torch.Tensor:
+    def get_probs_from_string(self, text: str, text2: str = None) -> torch.Tensor:
         if text:
-            inputs = self.text_to_textfield_tensors(text)
-            return self.get_probs_from_textfield_tensors(inputs)
+            if text2 is None:
+                inputs = self.text_to_textfield_tensors(text)
+                return self.get_probs_from_textfield_tensors(inputs)
+            else:
+                inputs = self.text_to_textfield_tensors(text)
+                inputs2 = self.text_to_textfield_tensors(text2)
+                return self.get_probs_from_textfield_tensors(inputs, inputs2)
         else:
             num_labels = self.classifier._num_labels
             probs = torch.ones(1, num_labels) / num_labels

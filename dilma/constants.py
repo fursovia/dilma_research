@@ -15,6 +15,6 @@ class ClassificationData:
 @dataclass_json
 @dataclass
 class PairClassificationData:
-    text_a: str
-    text_b: str
+    text1: str
+    text2: str
     label: str

@@ -48,10 +48,12 @@ def attack(
 
             try:
                 inputs = ClassificationData(**sample)
+                text_field = 'text'
             except TypeError:
                 inputs = PairClassificationData(**sample)
+                text_field = 'text1'
 
-            typer.echo(inputs.text)
+            typer.echo(getattr(inputs, text_field))
             try:
                 adversarial_output = attacker.attack(inputs)
             except Exception as e:
@@ -62,8 +64,8 @@ def attack(
                     data=inputs, adversarial_data=inputs, probability=1.0, adversarial_probability=1.0
                 )
 
-            initial_text = adversarial_output.data.text
-            adv_text = adversarial_output.adversarial_data.text
+            initial_text = getattr(adversarial_output.data, text_field)
+            adv_text = getattr(adversarial_output.adversarial_data, text_field)
 
             if str(adversarial_output.data.label) != str(adversarial_output.adversarial_data.label):
                 adv_text = typer.style(adv_text, fg=typer.colors.GREEN, bold=True)
