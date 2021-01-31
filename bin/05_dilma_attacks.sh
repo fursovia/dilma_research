@@ -18,7 +18,7 @@ RESULTS_DIR="./results"
 DATE=$(date +%H%M%S-%d%m)
 
 
-for dataset_name in "rotten_tomatoes" "sst2" "ag_news" "dstc"; do
+for dataset_name in "dstc" "rotten_tomatoes" "sst2" "ag_news"; do
     data_path=${DATA_DIR}/${dataset_name}/test.json
 
     for attack_name in "dilma" "dilma_with_deep_levenshtein" "sampling_fool" "fgsm"; do
