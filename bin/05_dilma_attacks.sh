@@ -33,7 +33,7 @@ for dataset_name in "rotten_tomatoes" "sst2" "ag_news" "dstc"; do
           PYTHONPATH=. python dilma/commands/attack.py \
           ${config_path} \
           ${data_path} \
-          --out-dir ./results/${DATE}__${dataset_name}__${attack_name} \
+          --out-dir ${RESULTS_PATH} \
           --samples ${NUM_SAMPLES}
 
         if [ $dataset_name == "dstc" ]; then
@@ -45,8 +45,8 @@ for dataset_name in "rotten_tomatoes" "sst2" "ag_news" "dstc"; do
         fi
 
         PYTHONPATH=. python dilma/commands/evaluate.py \
-          ./results/${DATE}__${dataset_name}__${attack_name}/data.json \
-          --save-to ./results/${DATE}__${dataset_name}__${attack_name}/metrics.json \
+          ${RESULTS_PATH}/data.json \
+          --save-to ${RESULTS_PATH}/metrics.json \
           --target-clf-path ./presets/transformer_models/${dataset_name} \
           --num-labels ${num_labels}
     done
@@ -68,14 +68,14 @@ for dataset_name in "qqp"; do
           PYTHONPATH=. python dilma/commands/attack.py \
           ${config_path} \
           ${data_path} \
-          --out-dir ./results/${DATE}__${dataset_name}__${attack_name} \
+          --out-dir ${RESULTS_PATH} \
           --samples ${NUM_SAMPLES}
 
         PYTHONPATH=. python dilma/commands/evaluate.py \
-          ./results/${DATE}__${dataset_name}__${attack_name}/data.json \
-          --save-to ./results/${DATE}__${dataset_name}__${attack_name}/metrics.json \
+          ${RESULTS_PATH}/data.json \
+          --save-to ${RESULTS_PATH}/metrics.json \
           --target-clf-path ./presets/transformer_models/${dataset_name} \
           --num-labels ${num_labels}
     done
 
-python dilma/commands/aggregate.py ${RESULTS_DIR}/${DATE}
+PYTHONPATH=. python scripts/parse_attack_metrics.py ${RESULTS_DIR}/${DATE}
