@@ -137,4 +137,4 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2" "qqp"; do
 done
 
 #PYTHONPATH=. python scripts/parse_clf_metrics.py ./logs/${DATE} ./logs/${DATE}
-PYTHONPATH=. python scripts/parse_clf_metrics.py 
+PYTHONPATH=. python scripts/parse_clf_metrics.py
