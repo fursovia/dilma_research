@@ -173,5 +173,5 @@ class DILMA(Attacker):
                 outputs.append(output)
 
         best_output = self.find_best_attack(outputs)
-        best_output.history = [deepcopy(out.to_dict()) for out in outputs]
+        # best_output.history = [deepcopy(out.to_dict()) for out in outputs]
         return best_output
