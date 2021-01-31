@@ -5,6 +5,7 @@ import functools
 from typing import Sequence, List
 from multiprocessing import Pool
 from tqdm import tqdm
+from enum import Enum
 
 import numpy as np
 import Levenshtein
@@ -12,6 +13,7 @@ from bert_score import score
 from sentence_transformers import SentenceTransformer, util
 from nltk import ngrams
 from nltk.tokenize.treebank import TreebankWordTokenizer
+from collections import Counter
 import tqdm
 
 
@@ -251,6 +253,51 @@ def check_labeled_dep_parse(sent1: str, sent2: str) -> (int, int, int):
     return mismatched_head, matched_head, matched_words
 
 
+def jaccard(list_1: list, list_2: list) -> float:
+  deuniqued_1 = _deunique(list_1)
+  deuniqued_2 = _deunique(list_2)
+  intersetion = deuniqued_1.intersection(deuniqued_2)
+  union = deuniqued_1.union(deuniqued_2)
+  return 1. * len(intersetion) / len(union)
+
+def _deunique(values: list) -> set:
+  countering = Counter(values)
+  deuniqued = []
+  for _k, _v in countering.items():
+    deuniqued += [f'{_k}_{_i}' for _i in range(_v)]
+  return set(deuniqued)
+
+
+def _get_deprel(sent):
+    deprels = []
+    for _token in sent.words:
+      deprels.append(_token.deprel)
+    return deprels
+
+
+def _get_upos(sent):
+    upos = []
+    for _token in sent.words:
+      upos.append(_token.upos)
+    return upos
+
+
+def stanza_jaccard(sent1, sent2, metric_name):
+    if metric_name is StanzaMetric.DEPREL:
+        labels_1 = _get_deprel(sent1)
+        labels_2 = _get_deprel(sent2)
+    elif metric_name is StanzaMetric.UPOS:
+        labels_1 = _get_upos(sent1)
+        labels_2 = _get_upos(sent2)
+    return jaccard(labels_1, labels_2)
+
+
+
+class StanzaMetric(Enum):
+    DEPREL = 0
+    UPOS = 1
+
+
 def stanza_metrics(sequences: List[str], adversarial_sequences: List[str]):
     '''
     return:
@@ -265,12 +312,16 @@ def stanza_metrics(sequences: List[str], adversarial_sequences: List[str]):
         'mismatched_words': 0,
         'changed_entities': 0,
         'changed_head': 0,
-        'changed_deprel': 0}
+        'changed_deprel': 0,
+        'deprel_jaccard_sum': 0,
+        'pos_jaccard_sum': 0
+    }
 
     import stanza
     stanza.download('en')
     nlp = stanza.Pipeline('en')
-
+    if len(sequences) != len(adversarial_sequences):
+        raise ValueError("Sequences doesn't match adversarials.")
     for (
             sequence,
             adversarial_sequence) in zip(
@@ -289,5 +340,10 @@ def stanza_metrics(sequences: List[str], adversarial_sequences: List[str]):
         stat['changed_entities'] += missed_ne + added_ne
         stat['changed_head'] += mismatched_head
         stat['changed_deprel'] += mismatched_deprel
-
+        stat['deprel_jaccard_sum'] += stanza_jaccard(sent1, sent2, StanzaMetric.DEPREL)
+        stat['pos_jaccard_sum'] += stanza_jaccard(sent1, sent2, StanzaMetric.UPOS)
+    stat['deprel_jaccard_sum'] = round(stat['deprel_jaccard_sum'], 3)
+    stat['pos_jaccard_sum'] = round(stat['pos_jaccard_sum'], 3)
+    stat['deprel_jaccard_avg'] = round(1. * stat['deprel_jaccard_sum'] / len(sequences), 3)
+    stat['pos_jaccard_avg'] = round(1. * stat['pos_jaccard_sum'] / len(sequences), 3)
     return stat
