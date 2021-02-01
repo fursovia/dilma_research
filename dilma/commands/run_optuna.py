@@ -8,6 +8,7 @@ import optuna
 from dilma.commands.attack import attack
 from dilma.commands.evaluate import main as evaluate
 
+NUM_LABELS_MAPPING = {"dstc": 46, "ag_news": 4}
 
 BASIC_CONFIG = {
   "attacker": {
@@ -81,7 +82,10 @@ def get_objective(
         output_path=str(results_dir / "data.json"),
         save_to=str(results_dir / "metrics.json"),
         target_clf_path=f"./presets/transformer_models/{dataset_name}",
-        output_from_textattack=False
+        output_from_textattack=False,
+        device='cuda',
+        batch_size=32,
+        num_labels=NUM_LABELS_MAPPING.get(dataset_name, 2)
     )
 
     with open(str(results_dir / "metrics.json")) as f:
