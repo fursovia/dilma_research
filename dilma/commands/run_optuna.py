@@ -80,7 +80,8 @@ def get_objective(
     evaluate(
         output_path=str(results_dir / "data.json"),
         save_to=str(results_dir / "metrics.json"),
-        target_clf_path=f"./presets/transformer_models/{dataset_name}"
+        target_clf_path=f"./presets/transformer_models/{dataset_name}",
+        output_from_textattack=False
     )
 
     with open(str(results_dir / "metrics.json")) as f:
