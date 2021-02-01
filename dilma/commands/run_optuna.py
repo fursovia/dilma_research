@@ -70,7 +70,7 @@ def get_objective(
     config = BASIC_CONFIG
     config['attacker']['archive_path'] = f"./presets/models/{dataset_name}.tar.gz"
 
-    results_dir = Path(serialization_dir) / trial.number
+    results_dir = Path(serialization_dir) / f"{trial.number}"
     config_path = str(results_dir / "config.json")
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=4)
