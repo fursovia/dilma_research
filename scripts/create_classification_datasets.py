@@ -113,7 +113,8 @@ def get_dataset(dataset_name: str = None,
         intent2idx = {
             intent_name: intent_id for intent_id,
             intent_name in enumerate(
-                set(y))}
+                sorted(set(y)))
+        }
         y = [intent2idx[i] for i in y]
         X_train, X_dev, y_train, y_dev = train_test_split(
             X, y, test_size=0.25, random_state=random_state, stratify=y)
