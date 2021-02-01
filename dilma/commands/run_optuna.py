@@ -99,7 +99,7 @@ def main(
         study_name: str = "optuna_dilma"
 ):
     study = optuna.create_study(
-        storage="sqlite:///result/dilma_attacker.db",
+        # storage="sqlite:///result/dilma_attacker.db",
         sampler=optuna.samplers.TPESampler(seed=245),
         study_name=study_name,
         direction="maximize",
