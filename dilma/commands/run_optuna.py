@@ -76,7 +76,7 @@ def get_objective(
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=4)
 
-    attack(config_path, data_path=data_path, out_dir=str(results_dir), samples=num_samples)
+    attack(config_path, data_path=data_path, out_dir=str(results_dir), samples=int(num_samples))
     evaluate(
         output_path=str(results_dir / "data.json"),
         save_to=str(results_dir / "metrics.json"),
