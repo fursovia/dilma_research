@@ -13,7 +13,7 @@
 # bert-base-uncased-qqp for QQP
 
 DATE=$(date +%H%M%S-%d%m)
-CONFIG_PATH=./configs/models/clf_bcn.jsonnet
+CONFIG_PATH=./configs/models/clf_cnn.jsonnet
 CONFIG_NAME=$(basename ${CONFIG_PATH})
 CONFIG_NAME="${CONFIG_NAME%.*}"
 

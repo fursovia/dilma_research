@@ -1,5 +1,3 @@
-local transformer_model = "bert-base-uncased";
-
 {
   "dataset_reader": {
     "type": "text_classification_json",
@@ -14,7 +12,9 @@ local transformer_model = "bert-base-uncased";
         "token_min_padding_length": 5
       }},
     "tokenizer": {
-      "type": "just_spaces"
+      "type": "pretrained_transformer",
+      "model_name": "bert-base-uncased",
+      "add_special_tokens": false
     },
     "skip_label_indexing": false,
     "lazy": false
