@@ -1,3 +1,5 @@
+local num_classes = std.extVar("NUM_CLASSES");
+
 {
   "dataset_reader": {
     "type": "text_classification_json",
@@ -47,7 +49,7 @@
     "output_layer": {
         "input_dim": 2400,
         "num_layers": 3,
-        "output_dims": [1200, 600, 5],
+        "output_dims": [1200, 600, num_classes],
         "pool_sizes": 4,
         "dropout": [0.2, 0.3, 0.0]
     }

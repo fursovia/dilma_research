@@ -25,7 +25,16 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
     EXP_NAME=-${dataset}-${CONFIG_NAME}
     LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
-    TRAIN_DATA_PATH=./data/${dataset}/train.json \
+    if [ $dataset_name == "dstc" ]; then
+    num_labels=46
+    elif [ $dataset_name == "ag_news" ]; then
+    num_labels=4
+    else
+    num_labels=2
+    fi
+
+    NUM_CLASSES=num_labels \
+      TRAIN_DATA_PATH=./data/${dataset}/train.json \
       VALID_DATA_PATH=./data/${dataset}/valid.json \
       allennlp train ${CONFIG_PATH} \
       --serialization-dir ${LOG_DIR} \
