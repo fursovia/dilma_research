@@ -51,6 +51,10 @@ class Attacker(ABC, Registrable):
         self.vocab = self.classifier.vocab
 
         self.device = device
+        unused_tokens = [
+            token for token in self.vocab.get_token_to_index_vocabulary("tokens") if token.startswith("[unused")
+        ]
+        self.SPECIAL_TOKENS.append(unused_tokens)
         self.special_indexes = [self.vocab.get_token_index(token, "tokens") for token in self.SPECIAL_TOKENS]
 
     @abstractmethod
