@@ -8,6 +8,7 @@ from sklearn.metrics import accuracy_score
 from typing import List
 import torch
 
+from allennlp.predictors import TextClassifierPredictor
 from transformers import (AutoTokenizer,
                           AutoConfig,
                           AutoModelForSequenceClassification,
@@ -26,7 +27,7 @@ from dilma.utils.metrics import (
 )
 
 from scripts.eval_attack import create_dataloader, run_validation
-
+import dilma
 
 DATASET_NAME_TO_MODEL_NAME = {
     "sst2": "textattack/roberta-base-SST-2",
@@ -107,7 +108,8 @@ def main(
         False, "--output-from-textattack"),
     device: str = typer.Option('cuda'),
     batch_size: int = typer.Option(32),
-    num_labels: int = typer.Option(2)
+    num_labels: int = typer.Option(2),
+    allennlp_model: str = None,
 ):
 
     if output_from_textattack:
@@ -152,9 +154,24 @@ def main(
         y_adv, adversarial_probability = run_validation(
             model, perturbed_dataloader, device)
     else:
-        y_pred = None
-        probability = None  # np.zeros() if textattack
-        adversarial_probability = None
+        if allennlp_model is not None:
+            predictor = TextClassifierPredictor.from_path(allennlp_model)
+
+            y_pred = []
+            adversarial_probability = []
+            for text in perturbed_text:
+                p = predictor.predict(text)
+                y_pred.append(int(p['label']))
+                adversarial_probability.append(float(max(p['probs'])))
+
+            probability = []
+            for text in original_text:
+                p = predictor.predict(text)
+                probability.append(float(max(p['probs'])))
+        else:
+            y_pred = None
+            probability = None  # np.zeros() if textattack
+            adversarial_probability = None
 
     metrics = get_metrics(
         original_text,
