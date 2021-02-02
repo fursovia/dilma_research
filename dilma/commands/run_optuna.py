@@ -99,7 +99,7 @@ def main(
         data_path: str,
         num_samples: str,
         dataset_name: str,
-        num_trials: int = 100,
+        num_trials: int = 500,
         n_jobs: int = 1,
         timeout: int = 60 * 60 * 24,
         study_name: str = "optuna_dilma"
