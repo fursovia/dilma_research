@@ -23,3 +23,36 @@ for path in ./data/detection/*; do
       --serialization-dir ${LOG_DIR} \
       --include-package dilma
 done
+
+RESULT_DIR='RESULTS'
+DISCRIMINATOR_MODEL_PATH='discriminator_save'
+
+for dataset in "sst2" "ag_news" "rotten_tomatoes" "dstc"; do
+  for attacker in "dilma" "dilma_with_deep_levenshtein" "sampling_fool"; do
+      PYTHONPATH=. python scripts/train_discrimanor.py \
+          --model lstm \
+          --output-dir ${DISCRIMINATOR_MODEL_PATH} \
+          --metrics-output-path ${RESULT_DIR}/discriminator__${dataset}__${attacker}.json \
+          --dataset-folder new_data/${dataset}/${attacker}/data.json \
+          --epochs 50 \
+          --batch-size 250 \
+          --learning-rate 5e-4 \
+          --early-stopping-epochs 50
+
+  done
+        
+  for attacker in "deepwordbug" "hotflip" "textbugger" "pwws"; do
+      
+      PYTHONPATH=. python scripts/train_discrimanor.py \
+          --model lstm \
+          --output-dir ${DISCRIMINATOR_MODEL_PATH} \
+          --metrics-output-path ${RESULT_DIR}/discriminator__${dataset}__${attacker}.json \
+          --dataset-folder ${RESULT_DIR}/lstm_${dataset}_${attacker}.csv \
+          --epochs 50 \
+          --batch-size 250 \
+          --learning-rate 5e-4 \
+          --early-stopping-epochs 50
+  done
+done
+
+rm -r ${DISCRIMINATOR_MODEL_PATH}
