@@ -9,7 +9,7 @@
 # 5*. attack M examples of the train (!) set (will be needed for adversarial training and detection)
 
 
-NUM_SAMPLES=${1:-"500"}
+NUM_SAMPLES=${1:-"1000"}
 
 DATA_DIR="./data"
 CONFIG_DIR="./configs/attacks"

@@ -2,7 +2,7 @@
 name = "dilma"
 version = "0.1.0"
 description = ""
-authors = ["fursovia <fursov.ia@gmail.com>"]
+authors = ["Anonym <Anonym@gmail.com>"]
 
 [tool.poetry.scripts]
 attack = 'dilma.commands.attack:app'

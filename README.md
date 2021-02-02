@@ -1,57 +1,25 @@
-# DILMA [research repository]
+# DILMA
 
+To reproduce results from the paper
 
-## Competitors
-
-* **hotflip**: Beam search and gradient-based word swap (["HotFlip: White-Box Adversarial Examples for Text Classification" (Ebrahimi et al., 2017)](https://arxiv.org/abs/1712.06751)).
-* **deepwordbug**: Greedy replace-1 scoring and multi-transformation character-swap attack (["Black-box Generation of Adversarial Text Sequences to Evade Deep Learning Classifiers" (Gao et al., 2018)](https://arxiv.org/abs/1801.04354)).
-* **pwws**: Greedy attack with word importance ranking based on word saliency and synonym swap scores (["Generating Natural Language Adversarial Examples through Probability Weighted Word Saliency" (Ren et al., 2019)](https://www.aclweb.org/anthology/P19-1103/)).
-* **textbugger**: Greedy attack with word importance ranking and a combination of synonym and character-based swaps ([(["TextBugger: Generating Adversarial Text Against Real-world Applications" (Li et al., 2018)](https://arxiv.org/abs/1812.05271)).
-* etc.
-
-## Dataset/tasks
-
-* [glue^sst2](https://huggingface.co/nlp/viewer/?dataset=glue&config=sst2)
-* [glue^qqp](https://huggingface.co/nlp/viewer/?dataset=glue&config=qqp)
-* [glue^mnli](https://huggingface.co/nlp/viewer/?dataset=glue&config=mnli)
-* [ag_news](https://huggingface.co/nlp/viewer/?dataset=ag_news)
-* [rotten_tomatoes](https://huggingface.co/nlp/viewer/?dataset=rotten_tomatoes)
-
-
-## Models
-
-* lstm
-* roberta-base
-
-
-# Train Models
+1. Install packages
 
 ```bash
-bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/sst2
-bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/rotten_tomatoes
-bash bin/train.sh ./configs/models/clf_gru.jsonnet ./data/ag_news
+poetry install
+poetry shell
 ```
 
-
-# Attack models
+2. Run bash scripts
 
 ```bash
-CLF_PATH="./presets/models/sst2.tar.gz" \
-    python dilma/commands/attack.py ./configs/attacks/dilma_with_deep_levenshtein.jsonnet ./data/sst2/valid.json --samples 500
-        
-CLF_PATH="./presets/models/ag_news.tar.gz" \
-    python dilma/commands/attack.py ./configs/attacks/dilma_with_deep_levenshtein.jsonnet ./data/ag_news/valid.json --samples 500
-    
-CLF_PATH="./presets/models/rotten_tomatoes.tar.gz" \
-    python dilma/commands/attack.py ./configs/attacks/dilma_with_deep_levenshtein.jsonnet ./data/rotten_tomatoes/valid.json --samples 500
-    
-    
-CLF_PATH="./presets/models/sst2.tar.gz" \
-    python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet ./data/sst2/valid.json --samples 500
-        
-CLF_PATH="./presets/models/ag_news.tar.gz" \
-    python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet ./data/ag_news/valid.json --samples 500
-    
-CLF_PATH="./presets/models/rotten_tomatoes.tar.gz" \
-    python dilma/commands/attack.py ./configs/attacks/dilma.jsonnet ./data/rotten_tomatoes/valid.json --samples 500
+export CUDA_VISIBLE_DEVICES="1"
+
+bash bin/00_prepare_clf_datasets.sh
+bash bin/01_train_classifiers.sh 
+bash bin/02_prepare_deep_lev_dataset.sh 
+bash bin/03_train_deep_levenshtein.sh 
+bash bin/04_baseline_attacks.sh 
+bash bin/05_dilma_attacks.sh
+bash bin/06_adversarial_detection.sh
+bash bin/07_adversarial_training.sh
 ```
