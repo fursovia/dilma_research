@@ -3,7 +3,7 @@ local transformer_model = "bert-base-uncased";
 {
   "dataset_reader": {
     "type": "text_classification_json",
-    "token_indexers": "tokens": {
+    "token_indexers": {"tokens": {
         "type": "single_id",
         "start_tokens": [
           "<START>"
@@ -12,7 +12,7 @@ local transformer_model = "bert-base-uncased";
           "<END>"
         ],
         "token_min_padding_length": 5
-      },
+      }},
     "tokenizer": {
       "type": "just_spaces"
     },
