@@ -9,10 +9,3 @@ unzip dstc.zip
 rm dstc.zip
 
 PYTHONPATH=. python scripts/create_classification_datasets.py --substitute-fraction 0.5 --dstc-path dstc.json
-
-
-# добавить все датасеты в скрипт (+ substitute frac)
-# переделать скрипт обучения textattack (с поддержкой файла)
-# обучение lstm с помощью allennlp
-# fgsm + textattack
-# dilma attacks
