@@ -25,12 +25,12 @@ for dataset in "rotten_tomatoes" "ag_news" "dstc" "sst2"; do
     EXP_NAME=-${dataset}-${CONFIG_NAME}
     LOG_DIR=./logs/${DATE}/${EXP_NAME}
 
-    if [ $dataset_name == "dstc" ]; then
-    num_labels=46
-    elif [ $dataset_name == "ag_news" ]; then
-    num_labels=4
+    if [ $dataset == "dstc" ]; then
+      num_labels=46
+    elif [ $dataset == "ag_news" ]; then
+      num_labels=4
     else
-    num_labels=2
+      num_labels=2
     fi
 
     NUM_CLASSES=num_labels \
