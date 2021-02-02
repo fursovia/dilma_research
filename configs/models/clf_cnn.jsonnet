@@ -16,7 +16,7 @@ local transformer_model = "bert-base-uncased";
     "tokenizer": {
       "type": "just_spaces"
     },
-    "skip_label_indexing": true,
+    "skip_label_indexing": false,
     "lazy": false
   },
   "train_data_path": std.extVar("TRAIN_DATA_PATH"),
