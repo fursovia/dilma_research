@@ -36,13 +36,15 @@ local transformer_model = "bert-base-uncased";
     "seq2vec_encoder": {
       "type": "cnn",
       "embedding_dim": 200,
-      "num_filters": 8,
+      "num_filters": 32,
       "ngram_filter_sizes": [
+        2,
         3,
+        4,
         5
       ]
     },
-    "dropout": 0.2,
+    "dropout": 0.1,
   },
   "data_loader": {
     "shuffle": true,
