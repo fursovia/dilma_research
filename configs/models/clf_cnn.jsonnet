@@ -37,6 +37,7 @@ local transformer_model = "bert-base-uncased";
       "type": "cnn",
       "embedding_dim": 200,
       "num_filters": 32,
+      "conv_layer_activation": "tanh",
       "ngram_filter_sizes": [
         2,
         3,
@@ -44,7 +45,7 @@ local transformer_model = "bert-base-uncased";
         5
       ]
     },
-    "dropout": 0.1,
+    "dropout": 0.2,
   },
   "data_loader": {
     "shuffle": true,
