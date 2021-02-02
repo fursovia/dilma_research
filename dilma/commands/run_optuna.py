@@ -73,7 +73,7 @@ def get_objective(
 
     results_dir = Path(serialization_dir) / f"{trial.number}"
     results_dir.mkdir(exist_ok=True, parents=True)
-    config_path = str(results_dir / "config.json")
+    config_path = str(results_dir / "orig_config.json")
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=4)
 
